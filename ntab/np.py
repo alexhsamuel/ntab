@@ -7,6 +7,8 @@ import numpy as np
 
 #-------------------------------------------------------------------------------
 
+NAT = np.datetime64("nat")
+
 def get_dtype(name, val):
     try:
         return val.dtype
@@ -117,7 +119,7 @@ def default_for_dtype(dtype):
         return {
             "b": False,   # Very sadness.
             "f": np.nan,
-            "M": NP_NAT,
+            "M": NAT,
             "O": None,
             "S": "",
         }[dtype.kind]
