@@ -6,9 +6,9 @@ Pandas-lite tables, in a more numpy-oriented manner.
 
 from   __future__ import absolute_import, division, print_function, unicode_literals
 
+from   builtins import *
 import collections
 from   collections import OrderedDict as odict
-from   itertools import izip
 import numpy as np
 import sys
 
@@ -35,7 +35,7 @@ class Table(object):
 
 
         def __dir__(self):
-            return self.__arrays.keys()
+            return list(self.__arrays.keys())
 
 
         def __getattr__(self, name):
@@ -75,27 +75,27 @@ class Table(object):
 
 
         def keys(self):
-            return self.__arrays.keys()
+            return list(self.__arrays.keys())
 
 
         def iterkeys(self):
-            return self.__arrays.iterkeys()
+            return iter(self.__arrays.keys())
 
 
         def values(self):
-            return self.__arrays.values()
+            return list(self.__arrays.values())
 
 
         def itervalues(self):
-            return self.__arrays.itervalues()
+            return iter(self.__arrays.values())
 
 
         def items(self):
-            return self.__arrays.items()
+            return list(self.__arrays.items())
 
 
         def iteritems(self):
-            return self.__arrays.iteritems()
+            return iter(self.__arrays.items())
 
         
         def __getitem__(self, name):
@@ -119,7 +119,7 @@ class Table(object):
             Returns a table with arrays selected by container `names`.
             """
             return self.__table.__class__(
-                (n, a) for n, a in self.__arrays.iteritems() if n in names )
+                (n, a) for n, a in self.__arrays.items() if n in names )
 
 
         def renamed(self, names={}, **kw_args):
@@ -128,16 +128,16 @@ class Table(object):
             """
             names = dict(names)
             names.update(kw_args)
-            names = { o: n for n, o in names.iteritems() }
+            names = { o: n for n, o in names.items() }
             return self.__table.__class__(
-                (names.get(n, n), a) for n, a in self.__arrays.iteritems() )
+                (names.get(n, n), a) for n, a in self.__arrays.items() )
 
 
         def sorted_as(self, *names):
             """
             Returns a table with the same arrays sorted as `names`.
             """
-            names = sort_as(self.__arrays.keys(), names)
+            names = sort_as(list(self.__arrays.keys()), names)
             return self.__table.__class__(
                 (n, self.__arrays[n]) for n in names )
 
@@ -169,7 +169,7 @@ class Table(object):
             Row = self.__table.Row
             return (
                 Row(*r)
-                for r in izip(*self.__table._Table__arrays.values())
+                for r in zip(*list(self.__table._Table__arrays.values()))
             )
 
 
@@ -197,7 +197,7 @@ class Table(object):
 
 
         def iterkeys(self):
-            return iter(self.keys())
+            return iter(list(self.keys()))
 
 
         def itervalues(self):
@@ -208,7 +208,7 @@ class Table(object):
 
 
         def values(self):
-            return list(self.itervalues())
+            return list(self.values())
 
 
         def iteritems(self):
@@ -222,7 +222,7 @@ class Table(object):
 
 
         def __len__(self):
-            return len(self.keys())
+            return len(list(self.keys()))
 
 
         def __getitem__(self, val):
@@ -258,7 +258,7 @@ class Table(object):
 
 
     def _get_row(self, idx):
-        values = ( a[idx] for a in self.__arrays.itervalues() )
+        values = ( a[idx] for a in self.__arrays.values() )
         return self.Row(*values)
 
 
@@ -266,13 +266,13 @@ class Table(object):
         return self.__class__(
             # FIXME: a.take(idxs) _should_ be faster, but its 1000x slower if
             # a is not a contiguous array.
-            (n, a[idxs]) for n, a in self.__arrays.iteritems()
+            (n, a[idxs]) for n, a in self.__arrays.items()
         )
 
 
     def __get_subtable(self, sel):
         return self.__class__(
-            (n, a[sel]) for n, a in self.__arrays.iteritems() )
+            (n, a[sel]) for n, a in self.__arrays.items() )
 
 
     #---------------------------------------------------------------------------
@@ -281,10 +281,10 @@ class Table(object):
         self.__arrays = odict(arrays)
         self.__length = (
             0 if len(self.__arrays) == 0 
-            else len(next(self.__arrays.itervalues()))
+            else len(next(iter(self.__arrays.values())))
         )
 
-        for name, array in self.__arrays.iteritems():
+        for name, array in self.__arrays.items():
             a = self.__as_array(array)
             if a is not array:
                 self.__arrays[name] = a
@@ -312,7 +312,7 @@ class Table(object):
     @property
     def Row(self):
         if self.__Row is None:
-            self.__Row = collections.namedtuple("Row", self.__arrays.keys())
+            self.__Row = collections.namedtuple("Row", list(self.__arrays.keys()))
         return self.__Row
 
 
@@ -323,12 +323,12 @@ class Table(object):
 
     @property
     def names(self):
-        return self.__arrays.keys()
+        return list(self.__arrays.keys())
 
 
     @property
     def dtypes(self):
-        return self.Row(*( a.dtype for a in self.__arrays.values() ))
+        return self.Row(*( a.dtype for a in list(self.__arrays.values()) ))
 
 
     #---------------------------------------------------------------------------
@@ -336,7 +336,7 @@ class Table(object):
     # FIXME: Make immutable?
 
     def add(self, **arrs):
-        bad_len = [ n for n, a in arrs.iteritems() if len(a) != self.__length ]
+        bad_len = [ n for n, a in arrs.items() if len(a) != self.__length ]
         if len(bad_len) > 0:
             raise ValueError("wrong length: " + ", ".join(bad_len))
         self.__arrays.update(arrs)
@@ -355,7 +355,7 @@ class Table(object):
 
     def filter_mask(self, **selections):
         mask = None
-        for name, value in selections.iteritems():
+        for name, value in selections.items():
             array = self.__arrays[name]
             if mask is None:
                 mask = array == value
@@ -409,11 +409,11 @@ class Table(object):
         All mappings must have the same keys.
         """
         recs = iter(recs)
-        cols = odict( (n, [v]) for n, v in next(recs).iteritems() )
+        cols = odict( (n, [v]) for n, v in next(recs).items() )
         for rec in recs:
-            for n, v in rec.iteritems():
+            for n, v in rec.items():
                 cols[n].append(v)
-        return class_( (n, np.array(v)) for n, v in cols.iteritems() )
+        return class_( (n, np.array(v)) for n, v in cols.items() )
 
 
     #---------------------------------------------------------------------------
@@ -421,7 +421,7 @@ class Table(object):
 
     def as_dataframe(self):
         import pandas as pd
-        return pd.DataFrame.from_items(self.__arrays.iteritems())
+        return pd.DataFrame.from_items(iter(self.__arrays.items()))
 
 
     #---------------------------------------------------------------------------
@@ -435,8 +435,8 @@ class Table(object):
             else:
                 return str(val)
 
-        names = self.__arrays.keys()
-        arrays = self.__arrays.values()
+        names = list(self.__arrays.keys())
+        arrays = list(self.__arrays.values())
         if max_length is not None:
             arrays = ( a[: max_length] for a in arrays )
         arrays = [ [ fmt(v) for v in a ] for a in arrays ]
@@ -498,8 +498,8 @@ class Table(object):
         """
         from cgi import escape
 
-        names = self.__arrays.keys()
-        arrays = self.__arrays.values()
+        names = list(self.__arrays.keys())
+        arrays = list(self.__arrays.values())
         if max_length is not None:
             arrays = [ a[: max_length] for a in arrays ]
         aligns = [
@@ -524,7 +524,7 @@ class Table(object):
         else:
             for row in zip(*arrays):
                 yield "<tr>"
-                for val, align in izip(row, aligns):
+                for val, align in zip(row, aligns):
                     yield "<td style='text-align: {};'>{}</td>".format(
                         align, escape(val))
                 yield "</tr>"
@@ -596,7 +596,7 @@ class GroupBy(collections.Mapping):
             return [
                 t._take_rows(o[i0 : i1])
                 for t, o, i0, i1 
-                in izip(self.__tables, orders, edges[i], edges[i + 1])
+                in zip(self.__tables, orders, edges[i], edges[i + 1])
             ]
         else:
             raise KeyError(val)
@@ -608,7 +608,7 @@ class GroupBy(collections.Mapping):
 
 
     def iterkeys(self):
-        return iter(self.keys())
+        return iter(list(self.keys()))
 
 
     def itervalues(self):
@@ -620,25 +620,25 @@ class GroupBy(collections.Mapping):
         """
         orders, _, edges = self.__argunique
         take = [ t._take_rows for t in self.__tables ]
-        for edge0, edge1 in izip(edges[: -1], edges[1 :]):
+        for edge0, edge1 in zip(edges[: -1], edges[1 :]):
             yield [
                 t(o[i0 : i1])
-                for t, o, i0, i1 in izip(take, orders, edge0, edge1)
+                for t, o, i0, i1 in zip(take, orders, edge0, edge1)
             ]
 
 
     def values(self):
         # This is not advisable, but...
-        return list(self.itervalues())
+        return list(self.values())
 
 
     def iteritems(self):
-        return izip(self.iterkeys(), self.itervalues())
+        return zip(iter(self.keys()), iter(self.values()))
 
 
     def items(self):
         # This is not advisable, but...
-        return list(self.iteritems())
+        return list(self.items())
 
 
     __iter__ = iterkeys
@@ -646,7 +646,7 @@ class GroupBy(collections.Mapping):
     #---------------------------------------------------------------------------
 
     def map(self, fn):
-        return ( fn(u, *t) for u, t in self.iteritems() )
+        return ( fn(u, *t) for u, t in self.items() )
 
 
 

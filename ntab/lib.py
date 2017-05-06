@@ -1,5 +1,7 @@
 from   __future__ import absolute_import, division, print_function, unicode_literals
 
+from   builtins import *
+
 #-------------------------------------------------------------------------------
 
 def tupleize(obj):
@@ -23,7 +25,7 @@ def tupleize(obj):
       ('Hello, world!',)
 
     """
-    if isinstance(obj, basestring):
+    if isinstance(obj, (str, bytes)):
         return (obj, )
     else:
         try:
@@ -48,7 +50,7 @@ def format_call(__name, *args, **kw_args):
     """
     name = __name.__name__ if hasattr(__name, "__name__") else str(__name)
     args = [ repr(a) for a in args ]
-    args.extend( n + "=" + repr(v) for n, v in kw_args.iteritems() )
+    args.extend( n + "=" + repr(v) for n, v in kw_args.items() )
     return name + "(" + ", ".join(args) + ")"
 
 

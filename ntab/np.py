@@ -1,9 +1,8 @@
-from   __future__ import absolute_import, division, print_function
+from   __future__ import absolute_import, division, print_function, unicode_literals
 
+from   builtins import *
 import collections
 import logging as log  # FIXME
-from   itertools import izip
-
 import numpy as np
 
 #-------------------------------------------------------------------------------
@@ -38,10 +37,10 @@ class ArrayAccumulator(object):
             log.debug("resizing columns: {}".format(self.__size))
             self.__cols = { 
                 n: self.resize(a, self.__size) 
-                for n, a in self.__cols.iteritems() 
+                for n, a in self.__cols.items() 
             }
 
-        for name, val in rec.iteritems():
+        for name, val in rec.items():
             try:
                 arr = self.__cols[name]
             except KeyError:
@@ -60,7 +59,7 @@ class ArrayAccumulator(object):
 
     @property
     def arrays(self):
-        return { n: a[: self.__length] for n, a in self.__cols.iteritems() }
+        return { n: a[: self.__length] for n, a in self.__cols.items() }
         
 
 
@@ -95,9 +94,9 @@ def arrs_from_recs(recs, size_hint=1024, get_dtype=get_dtype):
         if length == size:
             size *= 4
             log.debug("resizing columns: {}".format(size))
-            cols = { n: resize(a, size) for n, a in cols.iteritems() }
+            cols = { n: resize(a, size) for n, a in cols.items() }
 
-        for name, val in rec.iteritems():
+        for name, val in rec.items():
             try:
                 arr = cols[name]
             except KeyError:
@@ -108,7 +107,7 @@ def arrs_from_recs(recs, size_hint=1024, get_dtype=get_dtype):
             arr[length] = val
         length += 1
 
-    return { n: a[: length] for n, a in cols.iteritems() }
+    return { n: a[: length] for n, a in cols.items() }
 
 
 def default_for_dtype(dtype):
@@ -161,7 +160,7 @@ def join_groups(arrs, on):
             break
         grp = min(grp)
         subarrs = []
-        for i in xrange(n):
+        for i in range(n):
             idx = indexes[i]
             group_arr = group_arrs[i]
             g = group_arr[idx]
@@ -315,7 +314,7 @@ class MultiGroupBy(collections.Mapping):
 
 
     def iterkeys(self):
-        return iter(self.keys())
+        return iter(list(self.keys()))
 
 
     def itervalues(self):
@@ -326,24 +325,24 @@ class MultiGroupBy(collections.Mapping):
         and `subtables` is a sequence of subtables for that group.
         """
         orders, _, edges = self.__argunique
-        for edge0, edge1 in izip(edges[: -1], edges[1 :]):
+        for edge0, edge1 in zip(edges[: -1], edges[1 :]):
             yield [
-                o[i0 : i1] for o, i0, i1 in izip(orders, edge0, edge1)
+                o[i0 : i1] for o, i0, i1 in zip(orders, edge0, edge1)
             ]
 
 
     def values(self):
         # This is not advisable, but...
-        return list(self.itervalues())
+        return list(self.values())
 
 
     def iteritems(self):
-        return izip(self.iterkeys(), self.itervalues())
+        return zip(iter(self.keys()), iter(self.values()))
 
 
     def items(self):
         # This is not advisable, but...
-        return list(self.iteritems())
+        return list(self.items())
 
 
     def __len__(self):
@@ -356,7 +355,7 @@ class MultiGroupBy(collections.Mapping):
         i = np.searchsorted(unique, val)
         if unique[i] == val:
             return [
-                o[i0 : i1] for o, i0, i1 in izip(orders, edges[i], edges[i + 1])
+                o[i0 : i1] for o, i0, i1 in zip(orders, edges[i], edges[i + 1])
             ]
         else:
             raise KeyError(val)
@@ -374,7 +373,7 @@ class MultiGroupBy(collections.Mapping):
 
         return ( 
             fn(u, *( a[i] for a, i in zip(arrays, idxs) )) 
-            for u, idxs in self.iteritems() 
+            for u, idxs in self.items() 
         )
 
 
