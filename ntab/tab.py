@@ -17,162 +17,163 @@ from   .np import argunique, arguniquen
 
 #-------------------------------------------------------------------------------
 
+class ColsObjectProxy(object):
+    """
+    Proxy for arrays by name as attributes.
+    """
+
+    def __init__(self, table):
+        self.__dict__.update(
+            _ColsObjectProxy__table    =table,
+            _ColsObjectProxy__arrays   =table._Table__arrays,
+        )
+
+
+    def __dir__(self):
+        return list(self.__arrays.keys())
+
+
+    def __getattr__(self, name):
+        try:
+            return self.__arrays[name]
+        except KeyError:
+            raise AttributeError(name)
+
+
+    def __setattr__(self, name, array):
+        self.__arrays[name] = self.__table._Table__as_array(array)
+        self.__table._Table__update()
+
+
+    def __delattr__(self, name):
+        del self.__arrays[name]
+        self.__table._Table__update()
+
+
+
+
+class ColsProxy(collections.MutableMapping):
+    """
+    Mapping proxy for arrays by name.
+    """
+
+    def __init__(self, table):
+        self.__table = table
+        self.__arrays = table._Table__arrays
+
+
+    def __len__(self):
+        return len(self.__arrays)
+
+
+    def __iter__(self):
+        return iter(self.__arrays)
+
+
+    def keys(self):
+        return list(self.__arrays.keys())
+
+
+    def iterkeys(self):
+        return iter(self.__arrays.keys())
+
+
+    def values(self):
+        return list(self.__arrays.values())
+
+
+    def itervalues(self):
+        return iter(self.__arrays.values())
+
+
+    def items(self):
+        return list(self.__arrays.items())
+
+
+    def iteritems(self):
+        return iter(self.__arrays.items())
+
+
+    def __getitem__(self, name):
+        return self.__arrays[name]
+
+
+    def __setitem__(self, name, array):
+        self.__arrays[name] = self.__table._Table__as_array(array)
+        self.__table._Table__update()
+
+
+    def __delitem__(self, name):
+        del self.__arrays[name]
+        self.__table._Table__update()
+
+
+    # Special methods.
+
+    def select(self, names):
+        """
+        Returns a table with arrays selected by container `names`.
+        """
+        return self.__table.__class__(
+            (n, a) for n, a in self.__arrays.items() if n in names )
+
+
+    def renamed(self, names={}, **kw_args):
+        """
+        Returns a table with renamed arrays.
+        """
+        names = dict(names)
+        names.update(kw_args)
+        names = { o: n for n, o in names.items() }
+        return self.__table.__class__(
+            (names.get(n, n), a) for n, a in self.__arrays.items() )
+
+
+    def sorted_as(self, *names):
+        """
+        Returns a table with the same arrays sorted as `names`.
+        """
+        names = sort_as(list(self.__arrays.keys()), names)
+        return self.__table.__class__(
+            (n, self.__arrays[n]) for n in names )
+
+
+
+class RowsProxy(collections.Sequence):
+    # FIXME: Allow modifying values in rows (i.e. mutable rows)?
+    # FIXME: Allow inserting / removing rows (i.e. mutable sequence)?
+
+    def __init__(self, table):
+        self.__table = table
+        self.__arrays = table._Table__arrays
+
+
+    def __len__(self):
+        return self.__table.length
+
+
+    def __getitem__(self, sel):
+        if np.isscalar(sel):
+            # Return a single row.
+            return self.__table._get_row(int(sel))
+        else:
+            # Not a single index; return a subtable.
+            return self.__table._Table__get_subtable(sel)
+
+
+    def __iter__(self):
+        Row = self.__table.Row
+        return (
+            Row(*r)
+            for r in zip(*list(self.__table._Table__arrays.values()))
+        )
+
+
+
 class Table(object):
 
     # Max number of rows to show in __str__.
     STR_MAX_ROWS = 16
-
-    class Arrs(object):
-        """
-        Proxy for arrays by name as attributes.
-        """
-
-        def __init__(self, table):
-            self.__dict__.update(
-                _Arrs__table    =table,
-                _Arrs__arrays   =table._Table__arrays,
-            )
-
-
-        def __dir__(self):
-            return list(self.__arrays.keys())
-
-
-        def __getattr__(self, name):
-            try:
-                return self.__arrays[name]
-            except KeyError:
-                raise AttributeError(name)
-
-
-        def __setattr__(self, name, array):
-            self.__arrays[name] = self.__table._Table__as_array(array)
-            self.__table._Table__update()
-
-
-        def __delattr__(self, name):
-            del self.__arrays[name]
-            self.__table._Table__update()
-
-
-
-    class Arrays(collections.MutableMapping):
-        """
-        Mapping proxy for arrays by name.
-        """
-
-        def __init__(self, table):
-            self.__table = table
-            self.__arrays = table._Table__arrays
-
-        
-        def __len__(self):
-            return len(self.__arrays)
-
-
-        def __iter__(self):
-            return iter(self.__arrays)
-
-
-        def keys(self):
-            return list(self.__arrays.keys())
-
-
-        def iterkeys(self):
-            return iter(self.__arrays.keys())
-
-
-        def values(self):
-            return list(self.__arrays.values())
-
-
-        def itervalues(self):
-            return iter(self.__arrays.values())
-
-
-        def items(self):
-            return list(self.__arrays.items())
-
-
-        def iteritems(self):
-            return iter(self.__arrays.items())
-
-        
-        def __getitem__(self, name):
-            return self.__arrays[name]
-
-
-        def __setitem__(self, name, array):
-            self.__arrays[name] = self.__table._Table__as_array(array)
-            self.__table._Table__update()
-
-
-        def __delitem__(self, name):
-            del self.__arrays[name]
-            self.__table._Table__update()
-
-
-        # Special methods.
-
-        def select(self, names):
-            """
-            Returns a table with arrays selected by container `names`.
-            """
-            return self.__table.__class__(
-                (n, a) for n, a in self.__arrays.items() if n in names )
-
-
-        def renamed(self, names={}, **kw_args):
-            """
-            Returns a table with renamed arrays.
-            """
-            names = dict(names)
-            names.update(kw_args)
-            names = { o: n for n, o in names.items() }
-            return self.__table.__class__(
-                (names.get(n, n), a) for n, a in self.__arrays.items() )
-
-
-        def sorted_as(self, *names):
-            """
-            Returns a table with the same arrays sorted as `names`.
-            """
-            names = sort_as(list(self.__arrays.keys()), names)
-            return self.__table.__class__(
-                (n, self.__arrays[n]) for n in names )
-
-
-
-    class Rows(collections.Sequence):
-        # FIXME: Allow modifying values in rows (i.e. mutable rows)?
-        # FIXME: Allow inserting / removing rows (i.e. mutable sequence)?
-
-        def __init__(self, table):
-            self.__table = table
-            self.__arrays = table._Table__arrays
-
-
-        def __len__(self):
-            return self.__table.length
-
-
-        def __getitem__(self, sel):
-            if np.isscalar(sel):
-                # Return a single row.
-                return self.__table._get_row(int(sel))
-            else:
-                # Not a single index; return a subtable.
-                return self.__table._Table__get_subtable(sel)
-
-
-        def __iter__(self):
-            Row = self.__table.Row
-            return (
-                Row(*r)
-                for r in zip(*list(self.__table._Table__arrays.values()))
-            )
-
-
 
     class GroupBy(collections.Mapping):
 
@@ -292,9 +293,9 @@ class Table(object):
         self.__Row      = None
 
         # Proxies.
-        self.arrs       = self.Arrs(self)
-        self.arrays     = self.Arrays(self)
-        self.rows       = self.Rows(self)
+        self.c          = ColsObjectProxy(self)
+        self.cols       = ColsProxy(self)
+        self.rows       = RowsProxy(self)
 
 
     def __repr__(self):
