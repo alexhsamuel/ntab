@@ -10,6 +10,7 @@ from   builtins import *
 import collections
 from   collections import OrderedDict as odict
 import numpy as np
+import six
 import sys
 
 from   .lib import *
@@ -71,27 +72,15 @@ class ColsProxy(collections.MutableMapping):
 
 
     def keys(self):
-        return list(self.__arrays.keys())
-
-
-    def iterkeys(self):
-        return iter(self.__arrays.keys())
+        return self.__arrays.keys()
 
 
     def values(self):
-        return list(self.__arrays.values())
-
-
-    def itervalues(self):
-        return iter(self.__arrays.values())
+        return self.__arrays.values()
 
 
     def items(self):
-        return list(self.__arrays.items())
-
-
-    def iteritems(self):
-        return iter(self.__arrays.items())
+        return self.__arrays.items()
 
 
     def __getitem__(self, name):
@@ -197,33 +186,26 @@ class Table(object):
             return unique
 
 
-        def iterkeys(self):
-            return iter(list(self.keys()))
-
-
-        def itervalues(self):
+        def values(self):
             order, _, edge = self.__argunique
             subtable = self.__table._take_rows
             for e0, e1 in zip(edge[: -1], edge[1 :]):
                 yield subtable(order[e0 : e1])
 
 
-        def values(self):
-            return list(self.values())
-
-
-        def iteritems(self):
+        def items(self):
             order, unique, edge = self.__argunique
             subtable = self.__table._take_rows
             for u, e0, e1 in zip(unique, edge[: -1], edge[1 :]):
                 yield u, subtable(order[e0 : e1])
 
 
-        __iter__ = iterkeys
+        __iter__ = keys
 
 
         def __len__(self):
-            return len(list(self.keys()))
+            _, unique, _ = self.__argunique
+            return len(unique)
 
 
         def __getitem__(self, val):
@@ -282,7 +264,7 @@ class Table(object):
         self.__arrays = odict(arrays)
         self.__length = (
             0 if len(self.__arrays) == 0 
-            else len(next(iter(self.__arrays.values())))
+            else len(next(six.itervalues(self.__arrays)))
         )
 
         for name, array in self.__arrays.items():
@@ -422,7 +404,7 @@ class Table(object):
 
     def as_dataframe(self):
         import pandas as pd
-        return pd.DataFrame.from_items(iter(self.__arrays.items()))
+        return pd.DataFrame.from_items(self.__arrays.items())
 
 
     #---------------------------------------------------------------------------
@@ -608,9 +590,7 @@ class GroupBy(collections.Mapping):
         return unique
 
 
-    def iterkeys(self):
-        return iter(list(self.keys()))
-
+    __iter__ = keys
 
     def itervalues(self):
         """
@@ -628,21 +608,10 @@ class GroupBy(collections.Mapping):
             ]
 
 
-    def values(self):
-        # This is not advisable, but...
-        return list(self.values())
-
 
     def iteritems(self):
         return zip(iter(self.keys()), iter(self.values()))
 
-
-    def items(self):
-        # This is not advisable, but...
-        return list(self.items())
-
-
-    __iter__ = iterkeys
 
     #---------------------------------------------------------------------------
 
