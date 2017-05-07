@@ -13,8 +13,8 @@ import numpy as np
 import six
 import sys
 
+from   . import nplib
 from   .lib import *
-from   .np import argunique, arguniquen
 
 #-------------------------------------------------------------------------------
 
