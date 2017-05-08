@@ -16,16 +16,15 @@ def get_dtype(name, val):
         return np.array([val]).dtype
 
 
-class ArrayAccumulator(object):
+def resize(arr, size):
+    assert size > len(arr)
+    default = default_for_dtype(arr.dtype)
+    new_arr = np.full(size, default, dtype=arr.dtype)
+    new_arr[: len(arr)] = arr
+    return new_arr
 
-    @staticmethod
-    def resize(arr, size):
-        assert size > len(arr)
-        default = default_for_dtype(arr.dtype)
-        new_arr = np.full(size, default, dtype=arr.dtype)
-        new_arr[: len(arr)] = arr
-        return new_arr
 
+class RecAccumulator(object):
 
     def __init__(self, size_hint=1024):
         self.__cols = {}
@@ -38,7 +37,7 @@ class ArrayAccumulator(object):
             self.__size *= 4
             log.debug("resizing columns: {}".format(self.__size))
             self.__cols = { 
-                n: self.resize(a, self.__size) 
+                n: resize(a, self.__size) 
                 for n, a in self.__cols.items() 
             }
 
