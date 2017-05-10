@@ -33,7 +33,11 @@ setuptools.setup(
 
     packages=setuptools.find_packages(exclude=[]),
 
-    install_requires=["numpy"],
+    install_requires=[
+        "future",
+        "numpy",
+        "six",
+    ],
 
     package_data={},
     data_files=[],
