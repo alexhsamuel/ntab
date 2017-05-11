@@ -18,15 +18,15 @@ from   .lib import *
 
 #-------------------------------------------------------------------------------
 
-class ColsObjectProxy(object):
+class ArraysObjectProxy(object):
     """
     Proxy for arrays by name as attributes.
     """
 
     def __init__(self, table):
         self.__dict__.update(
-            _ColsObjectProxy__table    =table,
-            _ColsObjectProxy__arrays   =table._Table__arrays,
+            _ArraysObjectProxy__table    =table,
+            _ArraysObjectProxy__arrs     =table._Table__arrs,
         )
 
 
@@ -35,12 +35,12 @@ class ColsObjectProxy(object):
 
 
     def __dir__(self):
-        return list(self.__arrays.keys())
+        return list(self.__arrs.keys())
 
 
     def __getattr__(self, name):
         try:
-            return self.__arrays[name]
+            return self.__arrs[name]
         except KeyError:
             raise AttributeError(name)
 
@@ -50,20 +50,20 @@ class ColsObjectProxy(object):
 
 
     def __delattr__(self, name):
-        del self.__arrays[name]
+        del self.__arrs[name]
         self.__table._Table__update()
 
 
 
 
-class ColsProxy(collections.MutableMapping):
+class ArraysProxy(collections.MutableMapping):
     """
     Mapping proxy for arrays by name.
     """
 
     def __init__(self, table):
         self.__table = table
-        self.__arrays = table._Table__arrays
+        self.__arrs = table._Table__arrs
 
 
     def __repr__(self):
@@ -71,36 +71,36 @@ class ColsProxy(collections.MutableMapping):
 
 
     def __len__(self):
-        return len(self.__arrays)
+        return len(self.__arrs)
 
 
     def __iter__(self):
-        return iter(self.__arrays)
+        return iter(self.__arrs)
 
 
     def keys(self):
-        return self.__arrays.keys()
+        return self.__arrs.keys()
 
 
     def values(self):
-        return self.__arrays.values()
+        return self.__arrs.values()
 
 
     def items(self):
-        return self.__arrays.items()
+        return self.__arrs.items()
 
 
     def __getitem__(self, name):
-        return self.__arrays[name]
+        return self.__arrs[name]
 
 
     def __setitem__(self, name, array):
-        self.__arrays[name] = self.__table._Table__as_array(array)
+        self.__arrs[name] = self.__table._Table__as_array(array)
         self.__table._Table__update()
 
 
     def __delitem__(self, name):
-        del self.__arrays[name]
+        del self.__arrs[name]
         self.__table._Table__update()
 
 
@@ -111,7 +111,7 @@ class ColsProxy(collections.MutableMapping):
         Returns a table with arrays selected by container `names`.
         """
         return self.__table.__class__(
-            (n, a) for n, a in self.__arrays.items() if n in names )
+            (n, a) for n, a in self.__arrs.items() if n in names )
 
 
     def renamed(self, names={}, **kw_args):
@@ -122,16 +122,16 @@ class ColsProxy(collections.MutableMapping):
         names.update(kw_args)
         names = { o: n for n, o in names.items() }
         return self.__table.__class__(
-            (names.get(n, n), a) for n, a in self.__arrays.items() )
+            (names.get(n, n), a) for n, a in self.__arrs.items() )
 
 
     def sorted_as(self, *names):
         """
         Returns a table with the same arrays sorted as `names`.
         """
-        names = sort_as(list(self.__arrays.keys()), names)
+        names = sort_as(list(self.__arrs.keys()), names)
         return self.__table.__class__(
-            (n, self.__arrays[n]) for n in names )
+            (n, self.__arrs[n]) for n in names )
 
 
 
@@ -141,7 +141,7 @@ class RowsProxy(collections.Sequence):
 
     def __init__(self, table):
         self.__table = table
-        self.__arrays = table._Table__arrays
+        self.__arrs = table._Table__arrs
 
 
     def __repr__(self):
@@ -165,7 +165,7 @@ class RowsProxy(collections.Sequence):
         Row = self.__table.Row
         return (
             Row(*r)
-            for r in zip(*list(self.__table._Table__arrays.values()))
+            for r in zip(*list(self.__table._Table__arrs.values()))
         )
 
 
@@ -178,7 +178,7 @@ class GroupBy(collections.Mapping):
 
     def __init__(self, table, name):
         self.__table = table
-        self.__array = table._Table__arrays[name]
+        self.__array = table._Table__arrs[name]
         self.__name = name
 
 
@@ -249,13 +249,13 @@ class Table(object):
 
     def __update(self):
         """
-        Call this when `__arrays` changes.
+        Call this when `__arrs` changes.
         """
         self.__Row = None
 
 
     def _get_row(self, idx):
-        values = ( a[idx] for a in self.__arrays.values() )
+        values = ( a[idx] for a in self.__arrs.values() )
         return self.Row(*values)
 
 
@@ -263,39 +263,39 @@ class Table(object):
         return self.__class__(
             # FIXME: a.take(idxs) _should_ be faster, but its 1000x slower if
             # a is not a contiguous array.
-            (n, a[idxs]) for n, a in self.__arrays.items()
+            (n, a[idxs]) for n, a in self.__arrs.items()
         )
 
 
     def __get_subtable(self, sel):
         return self.__class__(
-            (n, a[sel]) for n, a in self.__arrays.items() )
+            (n, a[sel]) for n, a in self.__arrs.items() )
 
 
     #---------------------------------------------------------------------------
 
-    def __init__(self, arrays=()):
-        self.__arrays = odict(arrays)
-        self.__length = (
-            None if len(self.__arrays) == 0 
-            else len(next(six.itervalues(self.__arrays)))
-        )
-
-        for name, array in self.__arrays.items():
-            a = self.__as_array(array)
-            if a is not array:
-                self.__arrays[name] = a
-
-        self.__Row      = None
+    def __init__(self, cols=odict()):
+        self.__arrs = cols
+        if len(self.__arrs) > 0:
+            self.__length = len(next(six.itervalues(self.__arrs)))
+        else:
+            self.__length = None
 
         # Proxies.
-        self.c          = ColsObjectProxy(self)
-        self.cols       = ColsProxy(self)
+        self.a          = ArraysObjectProxy(self)
+        self.arrays     = ArraysProxy(self)
         self.rows       = RowsProxy(self)
 
 
+    @classmethod
+    def from_cols(class_, *args, **kw_args):
+        tab = class_()
+        tab.cols.update(*args, **kw_args)
+        return tab
+
+
     def __repr__(self):
-        return format_ctor(self, self.__arrays)
+        return format_ctor(self, self.__arrs)
 
 
     def __str__(self):
@@ -303,14 +303,17 @@ class Table(object):
 
 
     def __reduce__(self):
-        return self.__class__, (self.__arrays, )
+        return self.__class__, (self.__arrs, )
 
 
     @property
     def Row(self):
-        if self.__Row is None:
-            self.__Row = collections.namedtuple("Row", list(self.__arrays.keys()))
-        return self.__Row
+        try:
+            return self.__Row
+        except AttributeError:
+            Row = self.__Row = collections.namedtuple(
+                "Row", list(self.__arrs.keys()))
+            return Row
 
 
     @property
@@ -323,12 +326,12 @@ class Table(object):
 
     @property
     def names(self):
-        return list(self.__arrays.keys())
+        return list(self.__arrs.keys())
 
 
     @property
     def dtypes(self):
-        return self.Row(*( a.dtype for a in list(self.__arrays.values()) ))
+        return self.Row(*( a.dtype for a in list(self.__arrs.values()) ))
 
 
     #---------------------------------------------------------------------------
@@ -346,7 +349,7 @@ class Table(object):
         if len(bad_len) > 0:
             raise ValueError("wrong length: " + ", ".join(bad_len))
 
-        self.__arrays.update(arrs)
+        self.__arrs.update(arrs)
         self.__update()
 
 
@@ -364,7 +367,7 @@ class Table(object):
     def filter_mask(self, **selections):
         mask = None
         for name, value in selections.items():
-            array = self.__arrays[name]
+            array = self.__arrs[name]
             if mask is None:
                 mask = array == value
             else:
@@ -429,7 +432,7 @@ class Table(object):
 
     def as_dataframe(self):
         import pandas as pd
-        return pd.DataFrame.from_items(self.__arrays.items())
+        return pd.DataFrame.from_items(self.__arrs.items())
 
 
     #---------------------------------------------------------------------------
@@ -443,8 +446,8 @@ class Table(object):
             else:
                 return str(val)
 
-        names = list(self.__arrays.keys())
-        arrays = list(self.__arrays.values())
+        names = list(self.__arrs.keys())
+        arrays = list(self.__arrs.values())
         if max_length is not None:
             arrays = ( a[: max_length] for a in arrays )
         arrays = [ [ fmt(v) for v in a ] for a in arrays ]
@@ -506,8 +509,8 @@ class Table(object):
         """
         from cgi import escape
 
-        names = list(self.__arrays.keys())
-        arrays = list(self.__arrays.values())
+        names = list(self.__arrs.keys())
+        arrays = list(self.__arrs.values())
         if max_length is not None:
             arrays = [ a[: max_length] for a in arrays ]
         aligns = [
