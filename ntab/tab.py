@@ -46,8 +46,7 @@ class ColsObjectProxy(object):
 
 
     def __setattr__(self, name, array):
-        self.__arrays[name] = self.__table._Table__as_array(array)
-        self.__table._Table__update()
+        self.__table.add(name=array)
 
 
     def __delattr__(self, name):
@@ -243,7 +242,7 @@ class Table(object):
         array = np.asarray(array)
         # if len(array.shape) != 1:
         #     raise ValueError("array must be one-dimensional")
-        if array.shape[0] != self.__length:
+        if self.__length is not None and array.shape[0] != self.__length:
             raise ValueError("array is the wrong length")
         return array
 
@@ -278,7 +277,7 @@ class Table(object):
     def __init__(self, arrays=()):
         self.__arrays = odict(arrays)
         self.__length = (
-            0 if len(self.__arrays) == 0 
+            None if len(self.__arrays) == 0 
             else len(next(six.itervalues(self.__arrays)))
         )
 
@@ -316,7 +315,10 @@ class Table(object):
 
     @property
     def length(self):
-        return self.__length
+        if self.__length is None:
+            raise RuntimeError("no columns")
+        else:
+            return self.__length
 
 
     @property
@@ -334,10 +336,18 @@ class Table(object):
     # FIXME: Make immutable?
 
     def add(self, **arrs):
-        bad_len = [ n for n, a in arrs.items() if len(a) != self.__length ]
+        arrs = list(arrs.items())
+
+        if self.__length is None and len(arrs) > 0:
+            # First column.
+            self.__length = len(arrs[0][1])
+
+        bad_len = [ n for n, a in arrs if len(a) != self.__length ]
         if len(bad_len) > 0:
             raise ValueError("wrong length: " + ", ".join(bad_len))
+
         self.__arrays.update(arrs)
+        self.__update()
 
 
     #---------------------------------------------------------------------------
