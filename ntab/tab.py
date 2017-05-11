@@ -282,6 +282,7 @@ class Table(object):
             self.__length = None
 
         # Proxies.
+        # FIXME: Create lazily?
         self.a          = ArraysObjectProxy(self)
         self.arrays     = ArraysProxy(self)
         self.rows       = RowsProxy(self)
