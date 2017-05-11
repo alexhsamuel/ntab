@@ -95,7 +95,7 @@ class ArraysProxy(collections.MutableMapping):
 
 
     def __setitem__(self, name, array):
-        self.__arrs[name] = self.__table._Table__as_array(array)
+        self.__arrs[name] = self.__table._Table__as_arr(array)
         self.__table._Table__cols_changed()
 
 
