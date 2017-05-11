@@ -1,6 +1,7 @@
-from   __future__ import absolute_import, division, print_function, unicode_literals
+from   __future__ import absolute_import, division, print_function
 
 from   builtins import *
+import six
 
 #-------------------------------------------------------------------------------
 
@@ -89,5 +90,17 @@ def sort_as(items, order):
     # Then, generate any remaining items from `items`.
     for item in items:
         yield item
+
+
+def a_key(mapping):
+    return next(iter(mapping))
+
+
+def a_value(mapping):
+    return next(six.itervalues(mapping))
+
+
+def an_item(mapping):
+    return next(six.iteritems(mapping))
 
 
