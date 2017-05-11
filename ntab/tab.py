@@ -51,7 +51,7 @@ class ArraysObjectProxy(object):
 
     def __delattr__(self, name):
         del self.__arrs[name]
-        self.__table._Table__update()
+        self.__table._Table__cols_changed()
 
 
 
@@ -96,12 +96,12 @@ class ArraysProxy(collections.MutableMapping):
 
     def __setitem__(self, name, array):
         self.__arrs[name] = self.__table._Table__as_array(array)
-        self.__table._Table__update()
+        self.__table._Table__cols_changed()
 
 
     def __delitem__(self, name):
         del self.__arrs[name]
-        self.__table._Table__update()
+        self.__table._Table__cols_changed()
 
 
     # Special methods.
@@ -247,13 +247,6 @@ class Table(object):
         return array
 
 
-    def __update(self):
-        """
-        Call this when `__arrs` changes.
-        """
-        self.__Row = None
-
-
     def _get_row(self, idx):
         values = ( a[idx] for a in self.__arrs.values() )
         return self.Row(*values)
@@ -291,9 +284,12 @@ class Table(object):
     @classmethod
     def from_cols(class_, *args, **kw_args):
         tab = class_()
-        tab.cols.update(*args, **kw_args)
+        tab.__arrs.update(*args, **kw_args)
+        tab.__cols_changed()
         return tab
 
+
+    #---------------------------------------------------------------------------
 
     def __repr__(self):
         return format_ctor(self, self.__arrs)
@@ -339,6 +335,13 @@ class Table(object):
     # Mutators
     # FIXME: Make immutable?
 
+    def __cols_changed(self):
+        """
+        Call this when `__arrs` changes.
+        """
+        self.__Row = None
+
+
     def add(self, **arrs):
         arrs = list(arrs.items())
 
@@ -351,7 +354,7 @@ class Table(object):
             raise ValueError("wrong length: " + ", ".join(bad_len))
 
         self.__arrs.update(arrs)
-        self.__update()
+        self.__cols_changed()
 
 
     #---------------------------------------------------------------------------
