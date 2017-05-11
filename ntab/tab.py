@@ -235,16 +235,21 @@ class Table(object):
     # Max number of rows to show in __str__.
     STR_MAX_ROWS = 16
 
-    def __as_array(self, array):
+    def __as_arr(self, arr):
         """
         Raises `ValueError` if `array` isn't valid for this table.
         """
-        array = np.asarray(array)
-        # if len(array.shape) != 1:
-        #     raise ValueError("array must be one-dimensional")
-        if self.__length is not None and array.shape[0] != self.__length:
-            raise ValueError("array is the wrong length")
-        return array
+        if not isinstance(arr, np.ndarray):
+            arr = np.array(arr)
+        if len(arr.shape) != 1:
+            raise ValueError("array is not one-dimensional")
+        return arr
+
+
+    def __check_len(self, arr):
+        assert self.__length is not None
+        if len(arr) != self.__length:
+            raise ValueError("aray is wrong length")
 
 
     def _get_row(self, idx):
@@ -267,26 +272,36 @@ class Table(object):
 
     #---------------------------------------------------------------------------
 
-    def __init__(self, cols=odict()):
+    def __init__(self, cols=None):
+        if cols is None:
+            cols = odict()
         self.__arrs = cols
         if len(self.__arrs) > 0:
-            self.__length = len(next(six.itervalues(self.__arrs)))
+            self.__length = len(a_value(self.__arrs))
         else:
             self.__length = None
 
         # Proxies.
         # FIXME: Create lazily?
         self.a          = ArraysObjectProxy(self)
-        self.arrays     = ArraysProxy(self)
+        self.arrs       = ArraysProxy(self)
         self.rows       = RowsProxy(self)
 
 
     @classmethod
     def from_cols(class_, *args, **kw_args):
-        tab = class_()
-        tab.__arrs.update(*args, **kw_args)
-        tab.__cols_changed()
-        return tab
+        self = class_()
+        cols = odict(
+            (n, self.__as_arr(a))
+            for n, a in odict(*args, **kw_args).items()
+        )
+        if len(cols) > 0:
+            self.__length = len(a_value(cols))
+        for arr in cols.values():
+            self.__check_len(arr)
+        self.__arrs.update(cols)
+        self.__cols_changed()
+        return self
 
 
     #---------------------------------------------------------------------------
