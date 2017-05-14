@@ -5,6 +5,64 @@ import collections
 
 #-------------------------------------------------------------------------------
 
+# FIXME: Use `GroupBy` below?
+
+class SingleGroupBy(collections.Mapping):
+
+    def __init__(self, table, name):
+        self.__table = table
+        self.__array = table._Table__arrs[name]
+        self.__name = name
+
+
+    @property
+    def __argunique(self):
+        try:
+            u = self.__cache
+        except AttributeError:
+            u = self.__cache = nplib.argunique(self.__array)
+        return u
+
+
+    def keys(self):
+        _, unique, _ = self.__argunique
+        return unique
+
+
+    def values(self):
+        order, _, edge = self.__argunique
+        subtable = self.__table._take_rows
+        for e0, e1 in zip(edge[: -1], edge[1 :]):
+            yield subtable(order[e0 : e1])
+
+
+    def items(self):
+        order, unique, edge = self.__argunique
+        subtable = self.__table._take_rows
+        for u, e0, e1 in zip(unique, edge[: -1], edge[1 :]):
+            yield u, subtable(order[e0 : e1])
+
+
+    __iter__ = keys
+
+
+    def __len__(self):
+        _, unique, _ = self.__argunique
+        return len(unique)
+
+
+    def __getitem__(self, val):
+        order, unique, edge = self.__argunique
+        i = np.searchsorted(unique, val)
+        if unique[i] == val:
+            return self.__table._take_rows(order[edge[i] : edge[i + 1]])
+        else:
+            raise KeyError(val)
+
+
+
+#-------------------------------------------------------------------------------
+
 class GroupBy(collections.Mapping):
 
     def __init__(self, tables, names):
