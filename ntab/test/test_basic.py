@@ -13,7 +13,7 @@ def test_basic0():
     assert tuple(tab.arrs.keys()) == ("x", "y")
 
 
-def test_empty():
+def test_empty0():
     tab = Table()
     with pytest.raises(RuntimeError):
         tab.length
@@ -26,3 +26,14 @@ def test_empty():
         tab.a.z = np.arange(12)
 
 
+def test_empty1():
+    tab = Table()
+    with pytest.raises(RuntimeError):
+        tab.length
+    tab.arrs["x"] = np.arange(10)
+    assert tab.length == 10
+    tab.arrs["y"] = (np.arange(10) + 1)**2
+    assert tab.length == 10
+    
+    with pytest.raises(ValueError):
+        tab.arrs["z"] = np.arange(12)
