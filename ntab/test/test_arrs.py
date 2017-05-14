@@ -24,7 +24,7 @@ def test_empty():
 
 
 def test_remove_last():
-    tab = Table.from_arrs({"x": [1, 3, 5, 7, 9]})
+    tab = Table(x=[1, 3, 5, 7, 9])
     assert tab.num_cols == 1
     assert tab.num_rows == 5
     assert tuple(tab.names) == ("x", )

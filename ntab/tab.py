@@ -209,17 +209,10 @@ class Table(object):
             (n, a[sel]) for n, a in self.__arrs.items() )
 
 
-    #---------------------------------------------------------------------------
-
-    def __init__(self, arrs=None):
-        if arrs is None:
-            arrs = odict()
+    def __construct(self, arrs):
         self.__arrs = arrs
-
-        self.__length = (
-            0 if len(self.__arrs) == 0 else len(a_value(self.__arrs)))
+        self.__length = None if len(arrs) == 0 else len(a_value(arrs))
         self.__Row = None
-
         # Proxies.
         # FIXME: Create lazily?
         self.a          = ArraysObjectProxy(self)
@@ -227,19 +220,62 @@ class Table(object):
         self.rows       = RowsProxy(self)
 
 
+    def __check(self, arrs):
+        for name, arr in six.iteritems(arrs):
+            if not isinstance(name, str):
+                raise TypeError("not a string name: {}".format(name))
+            if not isinstance(arr, np.ndarray):
+                raise TypeError("not an ndarray: {}".format(name))
+            if len(arr.shape) != 1:
+                raise ValueError("not 1-dimensional array: {}".format(name))
+            if self.__length is not None and arr.shape != (self.__length, ):
+                raise ValueError("wrong length: {}".format(name))
+
+
+    #---------------------------------------------------------------------------
+
+    def __init__(self, *args, **kw_args):
+        """
+        Constructs a new table from named parallel arrays.
+
+        Arguments are anything that can construct a `dict` from column name
+        to array:
+
+        - A mapping object from names to arrays.
+        - An iterable of name, array pairs.
+        - Name, array keyword arguments.
+
+        Array arguments are converted to `ndarray`, if necessary.  They must all
+        be one-dimensional and the same length.
+        """
+        arrs = odict(*args, **kw_args)
+        # Make sure the arrays are all arrays.
+        arrs = odict( (str(n), np.array(a)) for n, a in six.iteritems(arrs) )
+
+        self.__construct(arrs)
+        self.__check(self.__arrs)
+
+
     @classmethod
-    def from_arrs(class_, *args, **kw_args):
-        self = class_()
-        arrs = odict(
-            (n, self.__as_arr(a))
-            for n, a in odict(*args, **kw_args).items()
-        )
-        self.__length = 0 if len(arrs) == 0 else len(a_value(arrs))
-        for arr in arrs.values():
-            if len(arr) != self.__length:
-                raise ValueError("array is wrong length")
-        self.__arrs.update(arrs)
-        return self
+    def wrap(class_, arrs, check=True):
+        """
+        Constructs a table by wrapping a mapping from names to parallel array.
+
+        @param arrs
+          A mapping object from string names to parallel `ndarray`s.  The table
+          henceforth owns the mapping; if the table is mutated, the mapping
+          will be as well.
+        @param check
+          If true, check that `arrs` honors the above.  If not, no check is
+          done, but if the `arrs` are the wrong type, undefined behavior may
+          occur later.
+        """
+        # Construct an instance without calling __init__().
+        self = object.__new__(class_)
+
+        self.__construct(arrs)
+        if check:
+            self.__check(self.__arrs)
 
 
     #---------------------------------------------------------------------------
@@ -268,10 +304,7 @@ class Table(object):
 
     @property
     def num_rows(self):
-        if self.__length is None:
-            raise RuntimeError("no columns")
-        else:
-            return self.__length
+        return 0 if self.__length is None else self.__length
 
 
     @property
@@ -293,18 +326,19 @@ class Table(object):
     # Mutators
     # FIXME: Make immutable?
 
-    def add(self, **arrs):
-        arrs = list(arrs.items())
+    def add(self, *args, **kw_args):
+        arrs = odict(*args, **kw_args)
+        arrs = odict( (str(n), np.array(a)) for n, a in six.iteritems(arrs) )
+
         if len(arrs) == 0:
+            # Nothing to do.
             return
 
         if len(self.__arrs) == 0:
-            # First column.
-            self.__length = len(arrs[0][1])
+            # This is the first column.
+            self.__length = len(a_value(arrs))
 
-        bad_len = [ n for n, a in arrs if len(a) != self.__length ]
-        if len(bad_len) > 0:
-            raise ValueError("wrong length: " + ", ".join(bad_len))
+        self.__check(arrs)
 
         self.__arrs.update(arrs)
         self.__Row = None
@@ -315,8 +349,8 @@ class Table(object):
             del self.__arrs[name]
         except KeyError:
             raise ValueError(name)
-
         if len(self.__arrs) == 0:
+            # Removed the last column.
             self.__length = 0
         self.__Row = None
 
@@ -363,37 +397,6 @@ class Table(object):
 
     #---------------------------------------------------------------------------
     # Factory methods
-
-    @classmethod
-    def from_array(class_, array):
-        """
-        Contructs from an array of records, such as a `np.recarray`.
-        """
-        return class_( (n, array[n]) for n in array.dtype.names )
-
-
-    @classmethod
-    def from_dataframe(class_, df):
-        """
-        Constructs from a `pandas.DataFrame`.
-        """
-        return class_( (n, df[n].values) for n in df.names )
-
-
-    @classmethod
-    def from_recs(class_, recs):
-        """
-        Constructs from an array of mapping records.
-
-        All mappings must have the same keys.
-        """
-        recs = iter(recs)
-        cols = odict( (n, [v]) for n, v in next(recs).items() )
-        for rec in recs:
-            for n, v in rec.items():
-                cols[n].append(v)
-        return class_( (n, np.array(v)) for n, v in cols.items() )
-
 
     #---------------------------------------------------------------------------
     # Conversion methods
@@ -531,5 +534,36 @@ class Table(object):
                 "<pre>" + cgi.escape(traceback.format_exc()) + "</pre>"
             )
 
+
+
+#-------------------------------------------------------------------------------
+# Construction functions
+
+def from_array(array, class_=Table):
+    """
+    Contructs a table from an array of records, such as a `np.recarray`.
+    """
+    return class_( (n, array[n]) for n in array.dtype.names )
+
+
+def from_dataframe(df, class_=Table):
+    """
+    Constructs a table from a `pandas.DataFrame`.
+    """
+    return class_( (n, df[n].values) for n in df.names )
+
+
+def from_recs(recs, class_=Table):
+    """
+    Constructs a table from an array of mapping records.
+
+    All mappings must have the same keys.
+    """
+    recs = iter(recs)
+    cols = odict( (n, [v]) for n, v in next(recs).items() )
+    for rec in recs:
+        for n, v in rec.items():
+            cols[n].append(v)
+    return class_( (n, np.array(v)) for n, v in cols.items() )
 
 
