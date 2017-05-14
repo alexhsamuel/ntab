@@ -10,54 +10,6 @@ from   ntab import Table, odict
 def test_basic0():
     tab = Table.from_cols((("x", [1, 3, 5, 7, 9]), ("y", [2, 4, 6, 8, 0])))
     assert tab.length == 5
-    assert list(tab.arrs.keys()) == ["x", "y"]
-
-
-def test_empty0():
-    tab = Table()
-    with pytest.raises(RuntimeError):
-        tab.length
-    tab.a.x = np.arange(10)
-    assert tab.length == 10
-    tab.a.y = (np.arange(10) + 1)**2
-    assert tab.length == 10
-    
-    with pytest.raises(ValueError):
-        tab.a.z = np.arange(12)
-
-
-def test_empty1():
-    tab = Table()
-    with pytest.raises(RuntimeError):
-        tab.length
-    tab.arrs["x"] = np.arange(10)
-    assert tab.length == 10
-    tab.arrs["y"] = (np.arange(10) + 1)**2
-    assert tab.length == 10
-    
-    with pytest.raises(ValueError):
-        tab.arrs["z"] = np.arange(12)
-
-
-def test_to_empty0():
-    tab = Table.from_cols({"x": [1, 3, 5, 7, 9]})
-    assert tab.length == 5
-    assert tab.names == ["x"]
-
-    del tab.a.x
-    with pytest.raises(RuntimeError):
-        tab.length
-    assert tab.names == []
-
-
-def test_to_empty1():
-    tab = Table.from_cols({"x": [1, 3, 5, 7, 9]})
-    assert tab.length == 5
-    assert tab.names == ["x"]
-
-    del tab.arrs["x"]
-    with pytest.raises(RuntimeError):
-        tab.length
-    assert tab.names == []
+    assert tuple(tab.arrs.keys()) == ("x", "y")
 
 

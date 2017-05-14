@@ -46,7 +46,7 @@ class ArraysObjectProxy(object):
 
 
     def __setattr__(self, name, array):
-        self.__table.add(name=array)
+        self.__table.add(**{name: array})
 
 
     def __delattr__(self, name):
@@ -97,7 +97,7 @@ class ArraysProxy(collections.MutableMapping):
 
 
     def __setitem__(self, name, array):
-        self.__table.add(name=array)
+        self.__table.add(**{name: array})
 
 
     def __delitem__(self, name):
