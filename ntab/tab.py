@@ -50,8 +50,10 @@ class ArraysObjectProxy(object):
 
 
     def __delattr__(self, name):
-        del self.__arrs[name]
-        self.__table._Table__cols_changed()
+        try:
+            self.__table.remove(name)
+        except ValueError:
+            raise AttributeError(name)
 
 
 
@@ -95,13 +97,14 @@ class ArraysProxy(collections.MutableMapping):
 
 
     def __setitem__(self, name, array):
-        self.__arrs[name] = self.__table._Table__as_arr(array)
-        self.__table._Table__cols_changed()
+        self.__table.add(name=array)
 
 
     def __delitem__(self, name):
-        del self.__arrs[name]
-        self.__table._Table__cols_changed()
+        try:
+            self.__table.remove(name)
+        except ValueError:
+            raise KeyError(name)
 
 
     # Special methods.
@@ -276,10 +279,10 @@ class Table(object):
         if cols is None:
             cols = odict()
         self.__arrs = cols
-        if len(self.__arrs) > 0:
-            self.__length = len(a_value(self.__arrs))
-        else:
-            self.__length = None
+
+        self.__length = (
+            None if len(self.__arrs) == 0 else len(a_value(self.__arrs)))
+        self.__Row = None
 
         # Proxies.
         # FIXME: Create lazily?
@@ -300,7 +303,6 @@ class Table(object):
         for arr in cols.values():
             self.__check_len(arr)
         self.__arrs.update(cols)
-        self.__cols_changed()
         return self
 
 
@@ -350,13 +352,6 @@ class Table(object):
     # Mutators
     # FIXME: Make immutable?
 
-    def __cols_changed(self):
-        """
-        Call this when `__arrs` changes.
-        """
-        self.__Row = None
-
-
     def add(self, **arrs):
         arrs = list(arrs.items())
 
@@ -369,7 +364,18 @@ class Table(object):
             raise ValueError("wrong length: " + ", ".join(bad_len))
 
         self.__arrs.update(arrs)
-        self.__cols_changed()
+        self.__Row = None
+
+
+    def remove(self, name):
+        try:
+            del self.__arrs[name]
+        except KeyError:
+            raise ValueError(name)
+
+        if len(self.__arrs) == 0:
+            self.__length = None
+        self.__Row = None
 
 
     #---------------------------------------------------------------------------
