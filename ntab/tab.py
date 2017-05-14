@@ -191,12 +191,6 @@ class Table(object):
         return arr
 
 
-    def __check_len(self, arr):
-        assert self.__length is not None
-        if len(arr) != self.__length:
-            raise ValueError("aray is wrong length")
-
-
     def _get_row(self, idx):
         values = ( a[idx] for a in self.__arrs.values() )
         return self.Row(*values)
@@ -217,13 +211,13 @@ class Table(object):
 
     #---------------------------------------------------------------------------
 
-    def __init__(self, cols=None):
-        if cols is None:
-            cols = odict()
-        self.__arrs = cols
+    def __init__(self, arrs=None):
+        if arrs is None:
+            arrs = odict()
+        self.__arrs = arrs
 
         self.__length = (
-            None if len(self.__arrs) == 0 else len(a_value(self.__arrs)))
+            0 if len(self.__arrs) == 0 else len(a_value(self.__arrs)))
         self.__Row = None
 
         # Proxies.
@@ -234,17 +228,17 @@ class Table(object):
 
 
     @classmethod
-    def from_cols(class_, *args, **kw_args):
+    def from_arrs(class_, *args, **kw_args):
         self = class_()
-        cols = odict(
+        arrs = odict(
             (n, self.__as_arr(a))
             for n, a in odict(*args, **kw_args).items()
         )
-        if len(cols) > 0:
-            self.__length = len(a_value(cols))
-        for arr in cols.values():
-            self.__check_len(arr)
-        self.__arrs.update(cols)
+        self.__length = 0 if len(arrs) == 0 else len(a_value(arrs))
+        for arr in arrs.values():
+            if len(arr) != self.__length:
+                raise ValueError("array is wrong length")
+        self.__arrs.update(arrs)
         return self
 
 
@@ -273,11 +267,16 @@ class Table(object):
 
 
     @property
-    def length(self):
+    def num_rows(self):
         if self.__length is None:
             raise RuntimeError("no columns")
         else:
             return self.__length
+
+
+    @property
+    def num_cols(self):
+        return len(self.__arrs)
 
 
     @property
@@ -296,8 +295,10 @@ class Table(object):
 
     def add(self, **arrs):
         arrs = list(arrs.items())
+        if len(arrs) == 0:
+            return
 
-        if self.__length is None and len(arrs) > 0:
+        if len(self.__arrs) == 0:
             # First column.
             self.__length = len(arrs[0][1])
 
@@ -316,7 +317,7 @@ class Table(object):
             raise ValueError(name)
 
         if len(self.__arrs) == 0:
-            self.__length = None
+            self.__length = 0
         self.__Row = None
 
 
