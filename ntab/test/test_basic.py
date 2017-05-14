@@ -10,7 +10,7 @@ from   ntab import Table, odict
 def test_basic0():
     tab = Table.from_cols((("x", [1, 3, 5, 7, 9]), ("y", [2, 4, 6, 8, 0])))
     assert tab.length == 5
-    assert tuple(tab.arrs.keys()) == ("x", "y")
+    assert list(tab.arrs.keys()) == ["x", "y"]
 
 
 def test_empty0():
@@ -37,3 +37,27 @@ def test_empty1():
     
     with pytest.raises(ValueError):
         tab.arrs["z"] = np.arange(12)
+
+
+def test_to_empty0():
+    tab = Table.from_cols({"x": [1, 3, 5, 7, 9]})
+    assert tab.length == 5
+    assert tab.names == ["x"]
+
+    del tab.a.x
+    with pytest.raises(RuntimeError):
+        tab.length
+    assert tab.names == []
+
+
+def test_to_empty1():
+    tab = Table.from_cols({"x": [1, 3, 5, 7, 9]})
+    assert tab.length == 5
+    assert tab.names == ["x"]
+
+    del tab.arrs["x"]
+    with pytest.raises(RuntimeError):
+        tab.length
+    assert tab.names == []
+
+
