@@ -188,17 +188,6 @@ class Table(object):
     # Max number of rows to show in __str__.
     STR_MAX_ROWS = 16
 
-    def __as_arr(self, arr):
-        """
-        Raises `ValueError` if `array` isn't valid for this table.
-        """
-        if not isinstance(arr, np.ndarray):
-            arr = np.array(arr)
-        if len(arr.shape) != 1:
-            raise ValueError("array is not one-dimensional")
-        return arr
-
-
     def _get_row(self, idx):
         values = ( a[idx] for a in self.__arrs.values() )
         return self.Row(*values)
@@ -301,16 +290,6 @@ class Table(object):
 
 
     @property
-    def Row(self):
-        try:
-            return self.__Row
-        except AttributeError:
-            Row = self.__Row = collections.namedtuple(
-                "Row", list(self.__arrs.keys()))
-            return Row
-
-
-    @property
     def num_rows(self):
         return 0 if self.__length is None else self.__length
 
@@ -328,6 +307,13 @@ class Table(object):
     @property
     def dtypes(self):
         return self.Row(*( a.dtype for a in list(self.__arrs.values()) ))
+
+
+    @property
+    def Row(self):
+        if self.__Row is None:
+            self.__Row = collections.namedtuple("Row", list(self.__arrs.keys()))
+        return self.__Row
 
 
     #---------------------------------------------------------------------------
@@ -402,9 +388,6 @@ class Table(object):
     def group_by(self, name):
         return GroupBy(self, name)
 
-
-    #---------------------------------------------------------------------------
-    # Factory methods
 
     #---------------------------------------------------------------------------
     # Conversion methods
