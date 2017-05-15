@@ -390,14 +390,6 @@ class Table(object):
 
 
     #---------------------------------------------------------------------------
-    # Conversion methods
-
-    def as_dataframe(self):
-        import pandas as pd
-        return pd.DataFrame.from_items(self.__arrs.items())
-
-
-    #---------------------------------------------------------------------------
     # Input/output
 
     # FIXME: This is horrible.  It will be rewritten.
@@ -557,5 +549,16 @@ def from_recs(recs, Table=Table):
         for n, v in rec.items():
             cols[n].append(v)
     return Table( (n, np.array(v)) for n, v in cols.items() )
+
+
+#-------------------------------------------------------------------------------
+# Conversion methods
+
+def to_dataframe(tab):
+    """
+    Converts the table to a Pandas dataframe.
+    """
+    import pandas as pd
+    return pd.DataFrame.from_items(tab.arrs.items())
 
 
