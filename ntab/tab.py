@@ -176,6 +176,14 @@ class RowsProxy(collections.Sequence):
 #-------------------------------------------------------------------------------
 
 class Table(object):
+    """
+    Data table consisting of named parallel `ndarray`s.
+
+    A table consists of zero or more arrays, representing columns, each of which
+    must be one-dimensional and of the same length.  The column arrays are taken
+    to be parallel: each "row" of the tabel consists of corresponding elements
+    of the column arrays.
+    """
 
     # Max number of rows to show in __str__.
     STR_MAX_ROWS = 16
