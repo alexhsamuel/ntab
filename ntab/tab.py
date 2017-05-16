@@ -273,6 +273,7 @@ class Table(object):
         self.__construct(arrs)
         if check:
             self.__check(self.__arrs)
+        return self
 
 
     #---------------------------------------------------------------------------
