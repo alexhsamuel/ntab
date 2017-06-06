@@ -138,6 +138,55 @@ class ArraysProxy(collections.MutableMapping):
 
 
 
+class Row(object):
+
+    def __init__(self, arrs, idx):
+        self.__arrs = arrs
+        self.__idx = idx
+
+
+    def __len__(self):
+        return len(self.__arrs)
+
+
+    def __iter__(self):
+        return ( a[self.__idx] for a in six.itervalues(self.__arrs) )
+
+
+    def __getitem__(self, idx):
+        return six.values(self.__arrs)[idx][self.__idx]
+
+
+    # FIXME: Is this a good idea?
+    def __dir__(self):
+        return tuple(self.__arrs)
+
+
+    def __getattr__(self, name):
+        try:
+            arr = self.__arrs[name]
+        except KeyError:
+            six.raise_from(AttributeError(name), None)
+        else:
+            return arr[self.__idx]
+
+
+    def __repr__(self):
+        return (
+            "Row({}, ".format(self.__idx)
+            + ", ".join( 
+                "{}={!r}".format(n, a[self.__idx])
+                for n, a in six.iteritems(self.__arrs))
+            + ")"
+        )
+
+    
+    @property
+    def __index__(self):
+        return self.__idx
+
+
+
 class RowsProxy(collections.Sequence):
     # FIXME: Allow modifying values in rows (i.e. mutable rows)?
     # FIXME: Allow inserting / removing rows (i.e. mutable sequence)?
@@ -165,10 +214,9 @@ class RowsProxy(collections.Sequence):
 
 
     def __iter__(self):
-        Row = self.__table.Row
         return (
-            Row(*r)
-            for r in zip(*list(self.__table._Table__arrs.values()))
+            Row(self.__arrs, i)
+            for i in six.moves.xrange(self.__table.length)
         )
 
 
@@ -189,8 +237,7 @@ class Table(object):
     STR_MAX_ROWS = 16
 
     def _get_row(self, idx):
-        values = ( a[idx] for a in self.__arrs.values() )
-        return self.Row(*values)
+        return Row(self.__arrs, idx)
 
 
     def _take_rows(self, idxs):
@@ -209,7 +256,6 @@ class Table(object):
     def __construct(self, arrs):
         self.__arrs = arrs
         self.__length = None if len(arrs) == 0 else len(a_value(arrs))
-        self.__Row = None
         # Proxies.
         # FIXME: Create lazily?
         self.a          = ArraysObjectProxy(self)
@@ -307,14 +353,10 @@ class Table(object):
 
     @property
     def dtypes(self):
-        return self.Row(*( a.dtype for a in list(self.__arrs.values()) ))
-
-
-    @property
-    def Row(self):
-        if self.__Row is None:
-            self.__Row = collections.namedtuple("Row", list(self.__arrs.keys()))
-        return self.__Row
+        return Row(
+            odict( (n, [a.dtype]) for n, a in six.iteritems(self.__arrs) ),
+            0
+        )
 
 
     #---------------------------------------------------------------------------
@@ -336,7 +378,6 @@ class Table(object):
         self.__check(arrs)
 
         self.__arrs.update(arrs)
-        self.__Row = None
 
 
     def remove(self, name):
@@ -347,7 +388,6 @@ class Table(object):
         if len(self.__arrs) == 0:
             # Removed the last column.
             self.__length = 0
-        self.__Row = None
 
 
     #---------------------------------------------------------------------------
