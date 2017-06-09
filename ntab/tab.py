@@ -473,90 +473,15 @@ class Table(object):
             print(line)
 
 
-    CSS = """
-    .tab-table {
-      font-size: 80%;
-      line-height: 70%;
-    }
-    .tab-table thead {
-      background: #e0e0e0;
-      line-height: 120%;
-    }
-    .tab-table td, .tab-table th, .tab-table tr {
-      border-color: #f0f0f0;
-      border-style: none dotted;
-    }
-    .tab-table tbody {
-      font-family: Consolas, monospace;
-    }
-    table.tab-table {
-      border-collapse: collapse;
-      border: none;
-    }
-    """
-
-    def format_html_table(self, max_length=16, css_class="tab-table"):
-        """
-        Renders the table as an HTML table element.
-
-        @return
-          A generator of HTML source strings.
-        """
-        from cgi import escape
-
-        names = list(self.__arrs.keys())
-        arrays = list(self.__arrs.values())
-        if max_length is not None:
-            arrays = [ a[: max_length] for a in arrays ]
-        aligns = [
-            "left" if a.dtype.kind in {"U", "S"} else "right"
-            for a in arrays
-        ]
-
-        arrays = [ [ str(v) for v in a ] for a in arrays ]
-
-        yield "<table class='{}'>".format(escape(css_class))
-        yield "<thead>"
-        yield "<tr>"
-        for name in names:
-            yield "<th>" + escape(name) + "</th>"
-        yield "</tr>"
-        yield "</thead>"
-        yield "<tbody>"
-        if self.__length == 0:
-            yield "<tr>"
-            yield "<td colspan='{}' style='text-align: center'>... empty ...</td>".format(len(names))
-            yield "</tr>"
-        else:
-            for row in zip(*arrays):
-                yield "<tr>"
-                for val, align in zip(row, aligns):
-                    yield "<td style='text-align: {};'>{}</td>".format(
-                        align, escape(val))
-                yield "</tr>"
-        if max_length is not None and max_length < self.__length:
-            yield "<tr>"
-            yield "<td colspan='{}' style='text-align: center'>... {} rows total ...</td>".format(
-                len(names), self.__length)
-            yield "</tr>"
-        yield "</tbody>"
-        yield "</table>"
-        
+    show_max_rows = 24
 
     def _repr_html_(self):
         """
         HTML output hook for IPython / Jupyter.
         """
-        # IPython silently ignores exceptions raised from here, which is 
-        # really confusing.  Instead, catch and format them.
-        try:
-            return "".join(self.format_html_table())
-        except:
-            import cgi, traceback
-            return (
-                "<b>exception in <code>Table._repr_html_</code>:</b>"
-                "<pre>" + cgi.escape(traceback.format_exc()) + "</pre>"
-            )
+        from . import html
+        return html.format_exc(html.render)(
+            self, max_rows=self.show_max_rows)
 
 
 
