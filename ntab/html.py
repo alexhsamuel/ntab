@@ -65,12 +65,6 @@ def format_exc(fn):
 
 
 def _render(table, css_class="tab-table", max_rows=None):
-    """
-    Renders the table as an HTML table element.
-
-    @return
-      A generator of HTML source strings.
-    """
     names   = list(table.arrs.keys())
     arrs    = list(table.arrs.values())
     if max_rows is not None:
@@ -115,7 +109,15 @@ def _render(table, css_class="tab-table", max_rows=None):
 
 
 
-def render(table, css_class="tab-table", max_rows=None):
-    return "".join(_render(table, css_class, max_rows))
+def render(table, max_rows=None):
+    """
+    Renders the table as an HTML table element.
+
+    @param max_rows
+      Maximum number of rows to show.
+    @return
+      HTML rendering of the table.
+    """
+    return "".join(_render(table, max_rows=max_rows))
 
 
