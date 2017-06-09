@@ -32,6 +32,7 @@ CSS = """
 
 .tab-table tbody tr:nth-child(odd) {
   background: #f8f8f8;
+}
 
 table.tab-table {
   border-collapse: collapse;
