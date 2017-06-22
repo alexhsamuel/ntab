@@ -82,7 +82,7 @@ def _render(table, css_class="tab-table", max_rows=None):
     yield "<thead>"
     yield "<tr>"
     for name, width in zip(names, widths):
-        yield "<th>{}</th>".format(elide(name, max(width, 8)))
+        yield "<th>{}</th>".format(elide(name, max(width, 8), elide_pos=0.7))
     yield "</tr>"
     yield "</thead>"
     yield "<tbody>"
