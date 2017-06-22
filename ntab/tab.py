@@ -40,7 +40,9 @@ def _ensure_array(obj, length):
             
     # Convert scalars to full arrays.
     if arr is None:
-        arr = np.full(length, obj)
+        # FIXME: Newer numpy doesn't require explicit dtype
+        dtype = np.array(obj).dtype
+        arr = np.full(length, obj, dtype)
     
     if len(arr.shape) != 1:
         raise ValueError("not one-dimensional")
