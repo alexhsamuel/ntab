@@ -9,12 +9,47 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 from   builtins import *
 import collections
 from   collections import OrderedDict as odict
+import itertools
 import numpy as np
+from   past.builtins import basestring
 import six
 import sys
 
 from   . import fmt, nplib
 from   .lib import *
+
+#-------------------------------------------------------------------------------
+
+def _ensure_array(obj, length):
+    """
+    Ensures `obj` is an ndarray of shape `(length, )`, converting if necessary.
+    """
+    arr = None
+
+    if isinstance(obj, np.ndarray):
+        arr = obj
+
+    if arr is None and not isinstance(obj, basestring):
+        # Convert sequences to arrays.
+        try:
+            len(obj)
+        except:
+            pass
+        else:
+            arr = np.array(obj)
+            
+    # Convert scalars to full arrays.
+    if arr is None:
+        # FIXME: Newer numpy doesn't require explicit dtype
+        dtype = np.array(obj).dtype
+        arr = np.full(length, obj, dtype)
+    
+    if len(arr.shape) != 1:
+        raise ValueError("not one-dimensional")
+    if length is not None and arr.shape != (length, ):
+        raise ValueError("wrong length")
+    return arr
+
 
 #-------------------------------------------------------------------------------
 
@@ -269,9 +304,9 @@ class Table(object):
             (n, a[sel]) for n, a in self.__arrs.items() )
 
 
-    def __construct(self, arrs):
+    def __construct(self, length, arrs):
+        self.__length = length
         self.__arrs = arrs
-        self.__length = None if len(arrs) == 0 else len(a_value(arrs))
         # Proxies.
         # FIXME: Create lazily?
         self.a          = ArraysObjectProxy(self)
@@ -308,10 +343,26 @@ class Table(object):
         be one-dimensional and the same length.
         """
         arrs = odict(*args, **kw_args)
-        # Make sure the arrays are all arrays.
-        arrs = odict( (str(n), np.array(a)) for n, a in six.iteritems(arrs) )
 
-        self.__construct(arrs)
+        # Get the length.
+        length = None
+        for arr in six.itervalues(arrs):
+            try:
+                length = len(arr)
+            except TypeError:
+                pass
+            else:
+                break
+        if length is None and len(arrs) > 0:
+            raise ValueError("no arrs have length")
+
+        # Make sure the arrays are all arrays.
+        arrs = odict(
+            (str(n), _ensure_array(a, length)) 
+            for n, a in six.iteritems(arrs) 
+        )
+
+        self.__construct(length, arrs)
         self.__check(self.__arrs)
 
 
@@ -332,6 +383,7 @@ class Table(object):
         # Construct an instance without calling __init__().
         self = object.__new__(class_)
 
+        length = None if len(arrs) == 0 else len(a_value(arrs))
         self.__construct(arrs)
         if check:
             self.__check(self.__arrs)
@@ -377,11 +429,16 @@ class Table(object):
 
     #---------------------------------------------------------------------------
     # Mutators
-    # FIXME: Make immutable?
 
     def add(self, *args, **kw_args):
+        """
+        Adds or replaces a column.
+        """
         arrs = odict(*args, **kw_args)
-        arrs = odict( (str(n), np.array(a)) for n, a in six.iteritems(arrs) )
+        arrs = odict( 
+            (str(n), _ensure_array(a, self.__length)) 
+            for n, a in six.iteritems(arrs) 
+        )
 
         if len(arrs) == 0:
             # Nothing to do.
