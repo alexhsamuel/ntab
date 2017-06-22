@@ -185,6 +185,11 @@ class Row(object):
         return "\n".join(fmt.format_row(self))
 
 
+    def _repr_html_(self):
+        from . import html
+        return html.format_exc(html.render_row)(self)
+
+
     @property
     def __idx__(self):
         return self.__idx

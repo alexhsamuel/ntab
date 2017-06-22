@@ -2,6 +2,7 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 
 from   cgi import escape
 import functools
+import six
 import traceback
 
 from  .lib.text import elide
@@ -37,6 +38,20 @@ CSS = """
 table.tab-table {
   border-collapse: collapse;
   border: none;
+}
+
+.tab-row {
+  line-height: 60%;
+}
+
+.tab-row th {
+  font-size: 85%;
+  border-right: 1px solid #c0c0c0;
+}
+
+.tab-row td {
+  font-family: Consolas, monospace;
+  font-size: 85%;
 }
 """
 
@@ -82,7 +97,7 @@ def _render(table, css_class="tab-table", max_rows=None):
     yield "<thead>"
     yield "<tr>"
     for name, width in zip(names, widths):
-        yield "<th>{}</th>".format(elide(name, max(width, 8), elide_pos=0.7))
+        yield "<th>{}</th>".format(elide(name, max(width, 8), pos=0.7))
     yield "</tr>"
     yield "</thead>"
     yield "<tbody>"
@@ -119,5 +134,30 @@ def render(table, max_rows=None):
       HTML rendering of the table.
     """
     return "".join(_render(table, max_rows=max_rows))
+
+
+#-------------------------------------------------------------------------------
+
+def _render_row(row, css_class="tab-row"):
+    vals = row.__dict__
+
+    yield "<style>\n" + CSS + "</style>"
+    yield "<table class='{}'>".format(escape(css_class))
+    yield "<thead><tr><th>idx</th><td>{}</td></tr></thead>".format(row.__idx__)
+    yield "<tbody>"
+    for name, val in six.iteritems(vals):
+        yield "<tr>"
+        yield "<th>{}</th>".format(escape(name))
+        yield "<td>{}</td>".format(escape(str(val)))
+        yield "</tr>"
+    yield "</tbody>"
+    yield "</table>"
+
+
+def render_row(row):
+    """
+    Renders a row as an HTML table element.
+    """
+    return "".join(_render_row(row))
 
 
