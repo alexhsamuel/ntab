@@ -13,7 +13,7 @@ import numpy as np
 import six
 import sys
 
-from   . import nplib
+from   . import fmt, nplib
 from   .lib import *
 
 #-------------------------------------------------------------------------------
@@ -181,9 +181,20 @@ class Row(object):
         )
 
     
+    def __str__(self):
+        return "\n".join(fmt.format_row(self))
+
+
     @property
-    def __index__(self):
+    def __idx__(self):
         return self.__idx
+
+
+    # FIXME: Potentially sketchy.
+    @property
+    def __dict__(self):
+        return odict(
+            (n, a[self.__idx]) for n, a in six.iteritems(self.__arrs) )
 
 
 
