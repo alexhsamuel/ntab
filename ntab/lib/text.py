@@ -27,7 +27,11 @@ def pad(string, length, pad=" ", pos=1.0):
     if left > 0:
         string = pad * (left // pad_len) + pad[: left % pad_len] + string
     if right > 0:
-        string = string + pad[-(right % pad_len) :] + pad * (right // pad_len)
+        string = (
+            string 
+            + pad[pad_len - (right % pad_len) :] 
+            + pad * (right // pad_len)
+        )
     return string
 
 
