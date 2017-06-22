@@ -81,3 +81,18 @@ def test_empty_arrs():
     assert tab.num_rows == 0
 
 
+def test_tab_create_scalar():
+    tab = Table(i=2, x=[3, 4, 5], l="foo")
+    assert tab.num_rows == 3
+    assert list(tab.a.i) == [2, 2, 2]
+    assert list(tab.a.l) == ["foo", "foo", "foo"]
+
+
+def test_tab_add_col_scalar():
+    tab = Table(x=[3, 4, 5])
+    tab.a.i = 2
+    tab.a.l = "foo"
+    assert list(tab.a.i) == [2, 2, 2]
+    assert list(tab.a.l) == ["foo", "foo", "foo"]
+
+
