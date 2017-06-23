@@ -49,7 +49,7 @@ def format_table(tbl, max_length=32, header=True):
 
     else:
         fmts = [ 
-            fixfmt.numpy.choose_formatter(a, min_width=4)
+            fixfmt.numpy.choose_formatter(a, min_width=min(6, len(n)))
             for n, a in six.iteritems(tbl.arrs) 
         ]
         widths = [ f.width for f in fmts ]
