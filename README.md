@@ -22,7 +22,6 @@ numpy a lot, or can't afford unnecessary copies of your column data.
 >>> from ntab import Table
 >>> tbl = Table(label=["foo", "bar", "baz", "bif"], value=[3, 4.5, -1, 6.2], count=[100, 14, 72, 196])
 >>> print(tbl)
->>> print(tbl)
 label value count
 ----- ----- -----
 foo     3.0   100
