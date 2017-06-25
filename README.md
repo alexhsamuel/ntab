@@ -24,10 +24,10 @@ numpy a lot, or can't afford unnecessary copies of your column data.
 >>> print(tbl)
 label value count
 ----- ----- -----
-foo   3.0   100  
-bar   4.5   14   
-baz   -1.0  72   
-bif   6.2   196  
+foo     3.0   100
+bar     4.5    14
+baz    -1.0    72
+bif     6.2   196
 
 >>> tbl.a.value
 array([ 3. ,  4.5, -1. ,  6.2])

@@ -9,12 +9,47 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 from   builtins import *
 import collections
 from   collections import OrderedDict as odict
+import itertools
 import numpy as np
+from   past.builtins import basestring
 import six
 import sys
 
 from   . import fmt, nplib
 from   .lib import *
+
+#-------------------------------------------------------------------------------
+
+def _ensure_array(obj, length):
+    """
+    Ensures `obj` is an ndarray of shape `(length, )`, converting if necessary.
+    """
+    arr = None
+
+    if isinstance(obj, np.ndarray):
+        arr = obj
+
+    if arr is None and not isinstance(obj, basestring):
+        # Convert sequences to arrays.
+        try:
+            len(obj)
+        except:
+            pass
+        else:
+            arr = np.array(obj)
+            
+    # Convert scalars to full arrays.
+    if arr is None:
+        # FIXME: Newer numpy doesn't require explicit dtype
+        dtype = np.array(obj).dtype
+        arr = np.full(length, obj, dtype)
+    
+    if len(arr.shape) != 1:
+        raise ValueError("not one-dimensional")
+    if length is not None and arr.shape != (length, ):
+        raise ValueError("wrong length")
+    return arr
+
 
 #-------------------------------------------------------------------------------
 
@@ -269,9 +304,9 @@ class Table(object):
             (n, a[sel]) for n, a in self.__arrs.items() )
 
 
-    def __construct(self, arrs):
+    def __construct(self, length, arrs):
+        self.__length = length
         self.__arrs = arrs
-        self.__length = None if len(arrs) == 0 else len(a_value(arrs))
         # Proxies.
         # FIXME: Create lazily?
         self.a          = ArraysObjectProxy(self)
@@ -308,10 +343,26 @@ class Table(object):
         be one-dimensional and the same length.
         """
         arrs = odict(*args, **kw_args)
-        # Make sure the arrays are all arrays.
-        arrs = odict( (str(n), np.array(a)) for n, a in six.iteritems(arrs) )
 
-        self.__construct(arrs)
+        # Get the length.
+        length = None
+        for arr in six.itervalues(arrs):
+            try:
+                length = len(arr)
+            except TypeError:
+                pass
+            else:
+                break
+        if length is None and len(arrs) > 0:
+            raise ValueError("no arrs have length")
+
+        # Make sure the arrays are all arrays.
+        arrs = odict(
+            (str(n), _ensure_array(a, length)) 
+            for n, a in six.iteritems(arrs) 
+        )
+
+        self.__construct(length, arrs)
         self.__check(self.__arrs)
 
 
@@ -332,6 +383,7 @@ class Table(object):
         # Construct an instance without calling __init__().
         self = object.__new__(class_)
 
+        length = None if len(arrs) == 0 else len(a_value(arrs))
         self.__construct(arrs)
         if check:
             self.__check(self.__arrs)
@@ -345,7 +397,10 @@ class Table(object):
 
 
     def __str__(self):
-        return "\n".join(self.format(max_length=self.STR_MAX_ROWS)) + "\n"
+        return (
+              "\n".join(fmt.format_table(self, max_length=self.STR_MAX_ROWS)) 
+            + "\n"
+        )
 
 
     def __reduce__(self):
@@ -377,11 +432,16 @@ class Table(object):
 
     #---------------------------------------------------------------------------
     # Mutators
-    # FIXME: Make immutable?
 
     def add(self, *args, **kw_args):
+        """
+        Adds or replaces a column.
+        """
         arrs = odict(*args, **kw_args)
-        arrs = odict( (str(n), np.array(a)) for n, a in six.iteritems(arrs) )
+        arrs = odict( 
+            (str(n), _ensure_array(a, self.__length)) 
+            for n, a in six.iteritems(arrs) 
+        )
 
         if len(arrs) == 0:
             # Nothing to do.
@@ -444,46 +504,6 @@ class Table(object):
 
     #---------------------------------------------------------------------------
     # Input/output
-
-    # FIXME: This is horrible.  It will be rewritten.
-    def format(self, max_length=32, header=True):
-        def fmt(val):
-            if isinstance(val, np.ndarray):
-                return " ".join( str(a) for a in val )
-            else:
-                return str(val)
-
-        names = list(self.__arrs.keys())
-        arrays = list(self.__arrs.values())
-        if max_length is not None:
-            arrays = ( a[: max_length] for a in arrays )
-        arrays = [ [ fmt(v) for v in a ] for a in arrays ]
-        if len(arrays[0]) == 0:
-            widths = [0] * len(arrays)
-        else:
-            widths = [ max( len(v) for v in c ) for c in arrays ]
-        if header:
-            widths = [ max(len(n), w) for n, w in zip(names, widths) ]
-            yield " ".join( 
-                "{:{}s}".format(n, w)
-                for n, w in zip(names, widths)
-            )
-            yield " ".join( "-" * w for w in widths )
-        if len(arrays[0]) == 0:
-            yield "... empty table ..."
-        for row in zip(*arrays):
-            yield " ".join(
-                "{:{}s}".format(v, w)
-                for v, w in zip(row, widths)
-            )
-        if max_length is not None and max_length < self.__length:
-            yield "... {} rows total ...".format(self.__length)
-
-
-    def print(self, **kw_args):
-        for line in self.format(**kw_args):
-            print(line)
-
 
     show_max_rows = 24
 
