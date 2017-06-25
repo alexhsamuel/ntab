@@ -442,10 +442,6 @@ class Table(object):
             raise LookupError("multiple items")
 
 
-    def group_by(self, name):
-        return GroupBy(self, name)
-
-
     #---------------------------------------------------------------------------
     # Input/output
 
