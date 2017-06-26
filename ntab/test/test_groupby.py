@@ -17,14 +17,14 @@ def test_basic_1():
 
     foo = grp["foo"]
     assert foo.num_cols == 2
-    assert list(foo.names) == ["sym", "val"]
+    assert sorted(foo.names) == ["sym", "val"]
     assert foo.num_rows == 4
     assert (foo.a.sym == "foo").all()
     assert list(foo.a.val) == [3, 8, 4, 9]
 
     bar = grp["bar"]
     assert bar.num_cols == 2
-    assert list(bar.names) == ["sym", "val"]
+    assert sorted(bar.names) == ["sym", "val"]
     assert bar.num_rows == 2
     assert (bar.a.sym == "bar").all()
     assert list(bar.a.val) == [7, 1]
