@@ -2,26 +2,27 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 
 from   builtins import *
 import collections
+import numpy as np
+
+from   .lib import tupleize
+from   . import nplib
 
 #-------------------------------------------------------------------------------
 
-# FIXME: Use `GroupBy` below?
-
-class SingleGroupBy(collections.Mapping):
+class GroupBy(collections.Mapping):
 
     def __init__(self, table, name):
-        self.__table = table
-        self.__array = table._Table__arrs[name]
-        self.__name = name
+        self.__table    = table
+        self.__arr      = table.arrs[name]
+        self.__name     = name
+        self.__cache    = None
 
 
     @property
     def __argunique(self):
-        try:
-            u = self.__cache
-        except AttributeError:
-            u = self.__cache = nplib.argunique(self.__array)
-        return u
+        if self.__cache is None:
+             self.__cache = nplib.argunique(self.__arr)
+        return self.__cache
 
 
     def keys(self):
@@ -63,9 +64,10 @@ class SingleGroupBy(collections.Mapping):
 
 #-------------------------------------------------------------------------------
 
-class GroupBy(collections.Mapping):
+class MultiGroupBy(collections.Mapping):
 
     def __init__(self, tables, names):
+        tables = tupleize(tables)
         num = len(tables)
         if isinstance(names, str):
             names = (names, ) * num
@@ -74,9 +76,10 @@ class GroupBy(collections.Mapping):
             if len(names) != num:
                 raise ValueError("wrong number of names")
 
-        self.__tables       = tables
-        self.__names        = names
-        self.__arrays       = [ t.arrays[n] for t, n in zip(tables, names) ]
+        self.__tables   = tables
+        self.__names    = names
+        self.__arrays   = [ t.arrays[n] for t, n in zip(tables, names) ]
+        self.__cache    = None
 
 
     @property
@@ -84,11 +87,9 @@ class GroupBy(collections.Mapping):
         """
         Lazily performs the real work, and caches the result.
         """
-        try:
-            u = self.__cache
-        except AttributeError:
-            u = self.__cache = nplib.arguniquen(self.__arrays)
-        return u
+        if self.__cache is None:
+            self.__cache = nplib.arguniquen(self.__arrays)
+        return self.__cache
 
 
     def __len__(self):
@@ -132,15 +133,8 @@ class GroupBy(collections.Mapping):
             ]
 
 
-
     def iteritems(self):
         return zip(iter(self.keys()), iter(self.values()))
-
-
-    #---------------------------------------------------------------------------
-
-    def map(self, fn):
-        return ( fn(u, *t) for u, t in self.items() )
 
 
 

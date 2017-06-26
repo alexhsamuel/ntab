@@ -274,7 +274,7 @@ def arguniquen(arrays, orders=None):
 
     # Construct an array identifying which sorted value is from which array.
     which   = np.repeat(np.arange(num), lengths)[order]
-    if False:
+    if True:  # FIXME: unravel_groups is faster!
         # Slice this up by unique value, and count how many from which array.
         ref     = np.arange(num)[:, np.newaxis]
         edges   = [ (o == ref).sum(axis=1) for o in np.split(which, edge) ]
