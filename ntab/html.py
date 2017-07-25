@@ -109,6 +109,8 @@ def _render(table, css_class="tab-table", max_rows=None):
         for row in zip(*arrs):
             yield "<tr>"
             for val, align in zip(row, aligns):
+                if isinstance(val, str):
+                    val = val.encode("string_escape")
                 yield "<td style='text-align: {};'>{}</td>".format(
                     align, escape(val))
             yield "</tr>"
