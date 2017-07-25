@@ -90,7 +90,10 @@ def _render(table, css_class="tab-table", max_rows=None):
     ]
 
     arrs = [ [ str(v) for v in a ] for a in arrs ]
-    widths = [ max( len(v) for v in a ) for a in arrs ]
+    widths = [ 
+        0 if table.num_rows == 0 else max( len(v) for v in a ) 
+        for a in arrs 
+    ]
 
     yield "<style>\n" + CSS + "</style>"
     yield "<table class='{}'>".format(escape(css_class))
