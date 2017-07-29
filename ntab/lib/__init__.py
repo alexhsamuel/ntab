@@ -104,3 +104,24 @@ def an_item(mapping):
     return next(six.iteritems(mapping))
 
 
+def normalize_index(index, length):
+    """
+    Normalizes an index per sequence indexing.
+
+      >>> normalize_index(0, 10)
+      0
+      >>> normalize_index(9, 10)
+      9
+      >>> normalize_index(-2, 10)
+      8
+
+    """
+    index = int(index)
+    if 0 <= index < length:
+        return index
+    elif -length <= index < 0:
+        return index + length
+    else:
+        raise IndexError("index out of range: {}".format(index))
+
+

@@ -194,7 +194,7 @@ class Row(object):
 
     # FIXME: Is this a good idea?
     def __dir__(self):
-        return tuple(self.__arrs)
+        return list(self.__arrs)
 
 
     def __getattr__(self, name):
@@ -252,13 +252,14 @@ class RowsProxy(collections.Sequence):
 
 
     def __len__(self):
-        return self.__table.length
+        return self.__table.num_rows
 
 
     def __getitem__(self, sel):
         if np.isscalar(sel):
             # Return a single row.
-            return self.__table._get_row(int(sel))
+            idx = normalize_index(sel, self.__table.num_rows)
+            return self.__table._get_row(idx)
         else:
             # Not a single index; return a subtable.
             return self.__table._Table__get_subtable(sel)
