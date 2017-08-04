@@ -18,6 +18,13 @@ import sys
 from   . import fmt, nplib
 from   .lib import *
 
+__all__ = (
+    "Table",
+    "from_array",
+    "from_dataframe",
+    "from_recs",
+)
+
 #-------------------------------------------------------------------------------
 
 def _ensure_array(obj, length):

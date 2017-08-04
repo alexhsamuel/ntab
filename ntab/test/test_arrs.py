@@ -3,7 +3,7 @@ from   __future__ import absolute_import, division, print_function
 import numpy as np
 import pytest
 
-from   ntab import Table, odict
+from   ntab import Table
 
 #-------------------------------------------------------------------------------
 
