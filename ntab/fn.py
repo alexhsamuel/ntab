@@ -7,6 +7,26 @@ from   .tab import Table
 
 #-------------------------------------------------------------------------------
 
+def rename(tab, *args, **kw_args):
+    """
+    Renames cols.
+
+      >>> tab = Table(x=[3, 4, 5], y=[4, 5, 6])
+      >>> rename(tab, axe="x", why="y")
+      >>> sorted(tab.arrs.keys())
+      ['axe', 'why']
+
+    Arguments are converted to an ordered mapping from new to old col names,
+    and applied in order.  
+
+    @raise KeyError:
+      
+    """
+    for new, old in six.iteritems(odict(*args, **kw_args)):
+        tab.arrs[str(new)] = tab.arrs.pop(old)
+    
+
+
 def get_const(tab):
     """
     Finds cols in `tab` whose values are constant (same everywhere).
