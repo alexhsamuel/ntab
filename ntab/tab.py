@@ -464,14 +464,17 @@ class Table(object):
         self.__arrs.update(arrs)
 
 
-    def remove(self, name):
+    def remove(self, *names):
         try:
-            del self.__arrs[name]
-        except KeyError:
-            raise ValueError(name)
-        if len(self.__arrs) == 0:
-            # Removed the last column.
-            self.__length = 0
+            for name in names:
+                try:
+                    del self.__arrs[name]
+                except KeyError:
+                    raise ValueError(name)
+        finally:
+            if len(self.__arrs) == 0:
+                # Removed the last column.
+                self.__length = 0
 
 
     #---------------------------------------------------------------------------
