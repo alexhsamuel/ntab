@@ -1,6 +1,6 @@
 from   __future__ import absolute_import, division, print_function, unicode_literals
 
-from   builtins import *
+from   builtins import zip
 import collections
 import numpy as np
 
@@ -8,6 +8,42 @@ from   .lib import tupleize
 from   . import nplib
 
 #-------------------------------------------------------------------------------
+
+class Aggregation(object):
+    """
+    Encapsulates grouped aggregations over an array.
+    """
+
+    def __init__(self, arr, order, edge):
+        self.__arr      = arr[order]
+        self.__edge     = edge
+
+
+    def __call__(self, fn):
+        """
+        Applies an arbitrary aggregation function.
+
+        `fn` takes a single argument, an array of values in a single group.
+        It is invoked once for each group.  If a ufunc is given, its special
+        methods are used.
+        """
+        try:
+            reduceat = fn.reduceat
+        except AttributeError:
+            # Not a ufunc; evaluate explicitly.
+            return np.array([
+                fn(self.__arr[e0 : e1])
+                for e0, e1 in zip(self.__edge[: -1], self.__edge[1 :])
+            ])
+        else:
+            return reduceat(self.__arr, self.__edge)
+
+
+    def sum(self): return self(np.sum)
+    def min(self): return self(np.min)
+    def max(self): return self(np.max)
+
+
 
 class GroupBy(collections.Mapping):
 
@@ -59,6 +95,33 @@ class GroupBy(collections.Mapping):
             return self.__table._take_rows(order[edge[i] : edge[i + 1]])
         else:
             raise KeyError(val)
+
+
+    def counts(self):
+        _, _, edge = self.__argunique
+        return edge[1 :] - edge[: -1]
+
+
+    class AggregateArrays(object):
+        """
+        Proxy for aggregating arrs in the table.
+        """
+
+        def __init__(self, table, order, edge):
+            self.__table    = table
+            self.__order    = order
+            self.__edge     = edge
+
+
+        def __getattr__(self, name):
+            return Aggregation(
+                self.__table.arrs[name], self.__order, self.__edge)
+
+
+    @property
+    def agg(self):
+        order, _, edge = self.__argunique
+        return self.AggregateArrays(self.__table, order, edge)
 
 
 
