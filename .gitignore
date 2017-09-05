@@ -2,3 +2,6 @@
 __pycache__
 *.pyc
 work/
+build/
+dist/
+*.egg-info
