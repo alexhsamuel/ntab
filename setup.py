@@ -1,37 +1,36 @@
 import setuptools
 
+#-------------------------------------------------------------------------------
+
+long_description = """
+A lightweight Python tabular data structure.
+
+Collects parallel numpy arrays into a tabular data structure.  Provides
+syntactic sugar for column- and row-wise access, and basic grouping and
+aggregation.  Avoids copies and type conversions; does not mess around with the
+underlying numpy arrays.  Much less functionality than Pandas, with many fewer
+lines of code.
+"""
+
 setuptools.setup(
-    name="ntab",
-    version="0.0.0",
-    description="Simple numerical tables",
-    # long_description=long_description,
-    url="https://github.com/alexhsamuel/ntab",
-    author="Alex Samuel",
-    author_email="alex@alexsamuel.net",
-    license="MIT",
-    classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        "Development Status :: 3 - Alpha",
-
-        # Indicate who your project is intended for
+    name            ="ntab",
+    version         ="0.2.0",
+    description     ="Simple numerical tables",
+    long_description=long_description,
+    url             ="https://github.com/alexhsamuel/ntab",
+    author          ="Alex Samuel",
+    author_email    ="alex@alexsamuel.net",
+    license         ="MIT",
+    keywords        =["data", "table", "numerical", "numpy"],
+    classifiers     =[
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
-        # "Topic :: Software Development :: Build Tools",
-
         "License :: OSI Approved :: MIT License",
-
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
     ],
-
-    # What does your project relate to?
-    keywords="table numerical",
-
-    packages=setuptools.find_packages(exclude=[]),
 
     install_requires=[
         "future",
@@ -39,8 +38,9 @@ setuptools.setup(
         "six",
     ],
 
-    package_data={},
-    data_files=[],
-    entry_points={},
+    packages        =setuptools.find_packages(exclude=[]),
+    package_data    ={"": ["test/*"]},
+    data_files      =[],
+    entry_points    ={},
 )
 
