@@ -6,17 +6,14 @@ Pandas-lite tables, in a more numpy-oriented manner.
 
 from   __future__ import absolute_import, division, print_function, unicode_literals
 
-from   builtins import *
 import collections
 from   collections import OrderedDict as odict
-import itertools
 import numpy as np
 from   past.builtins import basestring
 import six
-import sys
 
-from   . import fmt, nplib
-from   .lib import *
+from   . import fmt
+from   .lib import sort_as, normalize_index, format_ctor, a_value
 
 __all__ = (
     "Table",
@@ -391,7 +388,6 @@ class Table(object):
         # Construct an instance without calling __init__().
         self = object.__new__(class_)
 
-        length = None if len(arrs) == 0 else len(a_value(arrs))
         self.__construct(arrs)
         if check:
             self.__check(self.__arrs)
