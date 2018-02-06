@@ -9,7 +9,6 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 import collections
 from   collections import OrderedDict as odict
 import numpy as np
-from   past.builtins import basestring
 import six
 
 from   . import fmt
@@ -33,7 +32,7 @@ def _ensure_array(obj, length):
     if isinstance(obj, np.ndarray):
         arr = obj
 
-    if arr is None and not isinstance(obj, basestring):
+    if arr is None and not isinstance(obj, (six.text_type, six.binary_type)):
         # Convert sequences to arrays.
         try:
             len(obj)

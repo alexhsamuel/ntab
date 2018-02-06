@@ -16,7 +16,6 @@ requirements:
     - python
     - setuptools
   run:
-    - future
     - numpy
     - python
     - six

@@ -33,7 +33,6 @@ setuptools.setup(
     ],
 
     install_requires=[
-        "future",
         "numpy",
         "six",
     ],
