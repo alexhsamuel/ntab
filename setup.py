@@ -14,7 +14,7 @@ lines of code.
 
 setuptools.setup(
     name            ="ntab",
-    version         ="0.3.0",
+    version         ="0.3.1",
     description     ="Simple numerical tables",
     long_description=long_description,
     url             ="https://github.com/alexhsamuel/ntab",
