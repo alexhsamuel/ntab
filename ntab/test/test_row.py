@@ -46,7 +46,9 @@ def test_row_iter():
     r1 = next(i)
     r2 = next(i)
     r3 = next(i)
-    assert list(r3) == [4, 5, 16]
+    assert r3.x == 4
+    assert r3.y == 5
+    assert r3.z == 16
     with pytest.raises(StopIteration):
         next(i)
 
