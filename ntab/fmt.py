@@ -8,7 +8,7 @@ from   .lib.text import pad, palide
 # Use https://github.com/alexhsamuel/fixfmt if available.
 try:
     import fixfmt
-    import fixfmt.numpy
+    import fixfmt.npfmt
 except ImportError:
     fixfmt = None
 
@@ -47,7 +47,7 @@ def format_table(tbl, max_length=32, header=True):
 
     else:
         fmts = [ 
-            fixfmt.numpy.choose_formatter(a, min_width=min(6, len(n)))
+            fixfmt.npfmt.choose_formatter(a, min_width=min(6, len(n)))
             for n, a in tbl.arrs.items() 
         ]
         widths = [ f.width for f in fmts ]
