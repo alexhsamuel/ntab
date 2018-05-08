@@ -1,7 +1,5 @@
 from   __future__ import absolute_import, division, print_function, unicode_literals
 
-import six
-
 #-------------------------------------------------------------------------------
 
 def pad(string, length, pad=" ", pos=1.0):
@@ -16,7 +14,7 @@ def pad(string, length, pad=" ", pos=1.0):
     if not (0 <= pos <= 1):
         raise RangeError("bad pos: {}".format(pos))
 
-    string = six.text_type(string)
+    string = str(string)
     if len(string) >= length:
         return string
 
@@ -52,7 +50,7 @@ def elide(string, length, ellipsis=u"\u2026", pos=1.0):
     if not (0 <= pos <= 1):
         raise RangeError("bad pos: {}".format(pos))
 
-    string = six.text_type(string)
+    string = str(string)
     if len(string) <= length:
         return string
 

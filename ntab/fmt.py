@@ -2,8 +2,6 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 
 import itertools
 import numpy as np
-import six
-from   six.moves import zip
 
 from   .lib.text import pad, palide
 
@@ -29,7 +27,7 @@ def format_table(tbl, max_length=32, header=True):
         num_rows = max(max_length, tbl.num_rows)
 
         # Format all values.
-        arrs = ( [ fmt(v) for v in a ] for a in six.itervalues(tbl.arrs) )
+        arrs = ( [ fmt(v) for v in a ] for a in tbl.arrs.values() )
         if max_length is not None:
             arrs = ( a[: max_length] for a in arrs )
         arrs = list(arrs)
@@ -50,13 +48,13 @@ def format_table(tbl, max_length=32, header=True):
     else:
         fmts = [ 
             fixfmt.numpy.choose_formatter(a, min_width=min(6, len(n)))
-            for n, a in six.iteritems(tbl.arrs) 
+            for n, a in tbl.arrs.items() 
         ]
         widths = [ f.width for f in fmts ]
         justs = [ isinstance(f, fixfmt.Number) for f in fmts ]
         rows = ( 
             " ".join( f(v) for f, v in zip(fmts, r) ) 
-            for r in zip(*six.itervalues(tbl.arrs)) 
+            for r in zip(*tbl.arrs.values()) 
         )
         if max_length is not None:
             rows = itertools.islice(rows, max_length)
@@ -73,9 +71,7 @@ def format_table(tbl, max_length=32, header=True):
     except StopIteration:
         yield "... empty table ..."
 
-    # FIXME: yield from rows
-    for row in rows:
-        yield row
+    yield from rows
 
     total_width = sum( 1 + w for w in widths )
     if max_length is not None and max_length < tbl.num_rows:
@@ -91,7 +87,7 @@ def format_row(row, width=80, max_name_width=32):
     """
     vals = row.__dict__
     name_width = min(max_name_width, max( len(n) for n in vals ))
-    for name, val in six.iteritems(vals):
+    for name, val in vals.items():
         yield "{}: {}".format(
             palide(name, name_width),
             palide(str(val), width - name_width - 2)

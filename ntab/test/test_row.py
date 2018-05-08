@@ -1,6 +1,5 @@
 from   __future__ import absolute_import, division, print_function
 
-from   collections import OrderedDict as odict
 import numpy as np
 import pytest
 
@@ -21,7 +20,7 @@ def test_rows():
 
 
 def test_row_str():
-    tab = Table(odict(x=[1, 2, 3, 4], y=[2, 3, 4, 5], z=[3, 4, 5, 16]))
+    tab = Table(x=[1, 2, 3, 4], y=[2, 3, 4, 5], z=[3, 4, 5, 16])
     s = str(tab.rows[1])
     assert "x" in s
     assert "y" in s
@@ -30,14 +29,14 @@ def test_row_str():
 
 
 def test_row_repr():
-    tab = Table(odict(x=[1, 2, 3, 4], y=[2, 3, 4, 5], z=[3, 4, 5, 16]))
+    tab = Table(x=[1, 2, 3, 4], y=[2, 3, 4, 5], z=[3, 4, 5, 16])
     r = repr(tab.rows[1])
     assert "x=2" in r
     assert "z=4" in r
 
 
 def test_row_iter():
-    tab = Table(odict(x=[1, 2, 3, 4], y=[2, 3, 4, 5], z=[3, 4, 5, 16]))
+    tab = Table(x=[1, 2, 3, 4], y=[2, 3, 4, 5], z=[3, 4, 5, 16])
     i = iter(tab.rows)
     r0 = next(i)
     assert r0.x == 1

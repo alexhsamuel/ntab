@@ -7,9 +7,7 @@ Pandas-lite tables, in a more numpy-oriented manner.
 from   __future__ import absolute_import, division, print_function, unicode_literals
 
 import collections
-from   collections import OrderedDict as odict
 import numpy as np
-import six
 
 from   . import fmt
 from   .lib import sort_as, normalize_index, format_ctor, a_value
@@ -32,7 +30,7 @@ def _ensure_array(obj, length):
     if isinstance(obj, np.ndarray):
         arr = obj
 
-    if arr is None and not isinstance(obj, (six.text_type, six.binary_type)):
+    if arr is None and not isinstance(obj, (bytes, str)):
         # Convert sequences to arrays.
         try:
             len(obj)
@@ -180,6 +178,7 @@ class Row(object):
 
     def __init__(self, arrs, idx):
         self.__arrs = arrs
+        self.__arrs_seq = tuple(arrs.values())
         self.__idx = idx
 
 
@@ -188,11 +187,11 @@ class Row(object):
 
 
     def __iter__(self):
-        return ( a[self.__idx] for a in six.itervalues(self.__arrs) )
+        return ( a[self.__idx] for a in self.__arrs.values() )
 
 
     def __getitem__(self, idx):
-        return six.values(self.__arrs)[idx][self.__idx]
+        return self.__arrs_seq[idx][self.__idx]
 
 
     # FIXME: Is this a good idea?
@@ -204,7 +203,7 @@ class Row(object):
         try:
             arr = self.__arrs[name]
         except KeyError:
-            six.raise_from(AttributeError(name), None)
+            raise AttributeError(name) from None
         else:
             return arr[self.__idx]
 
@@ -214,7 +213,7 @@ class Row(object):
             "Row({}, ".format(self.__idx)
             + ", ".join( 
                 "{}={!r}".format(n, a[self.__idx])
-                for n, a in six.iteritems(self.__arrs))
+                for n, a in self.__arrs.items())
             + ")"
         )
 
@@ -236,8 +235,7 @@ class Row(object):
     # FIXME: Potentially sketchy.
     @property
     def __dict__(self):
-        return odict(
-            (n, a[self.__idx]) for n, a in six.iteritems(self.__arrs) )
+        return { n: a[self.__idx] for n, a in self.__arrs.items() }
 
 
 
@@ -270,7 +268,7 @@ class RowsProxy(collections.Sequence):
 
     def __iter__(self):
         get_row = self.__table._get_row
-        return ( get_row(i) for i in six.moves.xrange(self.__table.num_rows) )
+        return ( get_row(i) for i in range(self.__table.num_rows) )
 
 
 
@@ -317,7 +315,7 @@ class Table(object):
 
 
     def __check(self, arrs):
-        for name, arr in six.iteritems(arrs):
+        for name, arr in arrs.items():
             if not isinstance(name, str):
                 raise TypeError("not a string name: {}".format(name))
             if not isinstance(arr, np.ndarray):
@@ -344,11 +342,11 @@ class Table(object):
         Array arguments are converted to `ndarray`, if necessary.  They must all
         be one-dimensional and the same length.
         """
-        arrs = odict(*args, **kw_args)
+        arrs = dict(*args, **kw_args)
 
         # Get the length.
         length = None
-        for arr in six.itervalues(arrs):
+        for arr in arrs.values():
             try:
                 length = len(arr)
             except TypeError:
@@ -359,9 +357,9 @@ class Table(object):
             raise ValueError("no arrs have length")
 
         # Make sure the arrays are all arrays.
-        arrs = odict(
+        arrs = dict(
             (str(n), _ensure_array(a, length)) 
-            for n, a in six.iteritems(arrs) 
+            for n, a in arrs.items() 
         )
 
         self.__construct(length, arrs)
@@ -425,10 +423,7 @@ class Table(object):
 
     @property
     def dtypes(self):
-        return Row(
-            odict( (n, [a.dtype]) for n, a in six.iteritems(self.__arrs) ),
-            0
-        )
+        return Row({ n: [a.dtype] for n, a in self.__arrs.items() }, 0)
 
 
     #---------------------------------------------------------------------------
@@ -438,11 +433,11 @@ class Table(object):
         """
         Adds or replaces a column.
         """
-        arrs = odict(*args, **kw_args)
-        arrs = odict( 
-            (str(n), _ensure_array(a, self.__length)) 
-            for n, a in six.iteritems(arrs) 
-        )
+        arrs = dict(*args, **kw_args)
+        arrs = {
+            str(n): _ensure_array(a, self.__length)
+            for n, a in arrs.items() 
+        }
 
         if len(arrs) == 0:
             # Nothing to do.
@@ -546,7 +541,7 @@ def from_recs(recs, Table=Table):
     """
     # FIXME: There are much faster implementations for this.
     recs = iter(recs)
-    cols = odict( (n, [v]) for n, v in next(recs).items() )
+    cols = { n: [v] for n, v in next(recs).items() }
     for rec in recs:
         for n, v in rec.items():
             cols[n].append(v)

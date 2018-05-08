@@ -14,7 +14,7 @@ lines of code.
 
 setuptools.setup(
     name            ="ntab",
-    version         ="0.2.2",
+    version         ="0.3.0",
     description     ="Simple numerical tables",
     long_description=long_description,
     url             ="https://github.com/alexhsamuel/ntab",
@@ -26,15 +26,12 @@ setuptools.setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
     ],
 
     install_requires=[
         "numpy",
-        "six",
     ],
 
     packages        =setuptools.find_packages(exclude=[]),

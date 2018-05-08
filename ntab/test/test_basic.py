@@ -1,6 +1,5 @@
 from   __future__ import absolute_import, division, print_function
 
-from   collections import OrderedDict as odict
 import numpy as np
 import pytest
 
@@ -29,7 +28,7 @@ def test_init_odict():
     """
     Tests table initialization from an ordered dict.
     """
-    arrs = odict()
+    arrs = dict()
     arrs["z"] = [3, 4, 5, 6]
     arrs["x"] = [1, 2, 3, 4]
     arrs["y"] = [2, 3, 4, 5]
@@ -40,7 +39,7 @@ def test_init_odict():
 
 
 def test_init_odict_empty():
-    tab = Table(odict())
+    tab = Table(dict())
     assert tab.num_cols == 0
     assert tab.num_rows == 0
     assert tuple(tab.names) == ()

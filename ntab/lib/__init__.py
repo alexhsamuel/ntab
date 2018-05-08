@@ -1,7 +1,5 @@
 from   __future__ import absolute_import, division, print_function
 
-import six
-
 #-------------------------------------------------------------------------------
 
 def tupleize(obj):
@@ -96,11 +94,11 @@ def a_key(mapping):
 
 
 def a_value(mapping):
-    return next(six.itervalues(mapping))
+    return next(iter(mapping.values()))
 
 
 def an_item(mapping):
-    return next(six.iteritems(mapping))
+    return next(iter(mapping.items()))
 
 
 def normalize_index(index, length):

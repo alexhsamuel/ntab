@@ -11,7 +11,6 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 
 from   contextlib import contextmanager
 import numpy as np
-import six
 import sys
 
 from   .tab import Table
@@ -57,7 +56,7 @@ def vars(tab, add_cols=True):
 
     finally:
         # Take the arrs back out of the namespace.
-        for name, arr in six.iteritems(tab.arrs):
+        for name, arr in tab.arrs.items():
             try:
                 val = globals[name]
             except KeyError:
@@ -71,7 +70,7 @@ def vars(tab, add_cols=True):
         if add_cols:
             # Look for new local array variables of the right length, and add
             # them in.
-            for name, val in six.iteritems(sys._getframe(2).f_locals):
+            for name, val in sys._getframe(2).f_locals.items():
                 if (old_locals.get(name, None) is not val
                     and isinstance(val, np.ndarray) 
                     and val.shape == (tab.num_rows, )

@@ -2,7 +2,6 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 
 from   cgi import escape
 import functools
-import six
 import traceback
 
 from  .lib.text import elide
@@ -150,7 +149,7 @@ def _render_row(row, css_class="tab-row"):
     yield "<table class='{}'>".format(escape(css_class))
     yield "<thead><tr><th>idx</th><td>{}</td></tr></thead>".format(row.__idx__)
     yield "<tbody>"
-    for name, val in six.iteritems(vals):
+    for name, val in vals.items():
         yield "<tr>"
         yield "<th>{}</th>".format(escape(name))
         yield "<td>{}</td>".format(escape(str(val)))

@@ -1,8 +1,5 @@
 from   __future__ import absolute_import, division, print_function
 
-from   collections import OrderedDict as odict
-import six
-
 from   .tab import Table
 
 #-------------------------------------------------------------------------------
@@ -22,7 +19,7 @@ def rename(tab, *args, **kw_args):
     @raise KeyError:
       
     """
-    for new, old in six.iteritems(odict(*args, **kw_args)):
+    for new, old in dict(*args, **kw_args).items():
         tab.arrs[str(new)] = tab.arrs.pop(old)
     
 
@@ -38,12 +35,12 @@ def get_const(tab):
       A mapping from col name to constant value, for cols whose arrays have
       the same value in every index.
     """
-    const = odict()
+    const = dict()
 
     if tab.num_rows == 0:
         return const
 
-    for name, arr in six.iteritems(tab.arrs):
+    for name, arr in tab.arrs.items():
         val = arr[0]
         if (arr == val).all():
             const[name] = val

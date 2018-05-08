@@ -2,7 +2,6 @@ from   __future__ import absolute_import, division, print_function, unicode_lite
 
 import collections
 import numpy as np
-from   six.moves import zip
 
 from   .lib import tupleize
 from   . import nplib
