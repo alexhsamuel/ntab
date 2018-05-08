@@ -269,10 +269,8 @@ class RowsProxy(collections.Sequence):
 
 
     def __iter__(self):
-        return (
-            Row(self.__arrs, i)
-            for i in six.moves.xrange(self.__table.length)
-        )
+        get_row = self.__table._get_row
+        return ( get_row(i) for i in six.moves.xrange(self.__table.num_rows) )
 
 
 

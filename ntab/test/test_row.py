@@ -36,3 +36,18 @@ def test_row_repr():
     assert "z=4" in r
 
 
+def test_row_iter():
+    tab = Table(odict(x=[1, 2, 3, 4], y=[2, 3, 4, 5], z=[3, 4, 5, 16]))
+    i = iter(tab.rows)
+    r0 = next(i)
+    assert r0.x == 1
+    assert r0.y == 2
+    assert r0.z == 3
+    r1 = next(i)
+    r2 = next(i)
+    r3 = next(i)
+    assert list(r3) == [4, 5, 16]
+    with pytest.raises(StopIteration):
+        next(i)
+
+
