@@ -78,6 +78,16 @@ def format_exc(fn):
     return wrapped
 
 
+# FIXME: Use formatters from ntab.fmt.
+def _format(val):
+    if isinstance(val, bytes):
+        # FIXME: Not sure if we should show ASCII as ASCII, or just hex values.
+        # return val.decode("ascii", errors="backslashreplace")
+        return " ".join( format(b, "02x") for b in val )
+    else:
+        return escape(str(val))
+
+
 def _render(table, css_class="tab-table", max_rows=None):
     names   = list(table.arrs.keys())
     arrs    = list(table.arrs.values())
@@ -88,7 +98,7 @@ def _render(table, css_class="tab-table", max_rows=None):
         for a in arrs
     ]
 
-    arrs = [ [ str(v) for v in a ] for a in arrs ]
+    arrs = [ [ _format(v) for v in a ] for a in arrs ]
     widths = [ 
         0 if table.num_rows == 0 else max( len(v) for v in a ) 
         for a in arrs 
@@ -111,10 +121,7 @@ def _render(table, css_class="tab-table", max_rows=None):
         for row in zip(*arrs):
             yield "<tr>"
             for val, align in zip(row, aligns):
-                if isinstance(val, str):
-                    val = val.encode("string_escape")
-                yield "<td style='text-align: {};'>{}</td>".format(
-                    align, escape(val))
+                yield "<td style='text-align: {};'>{}</td>".format(align, val)
             yield "</tr>"
     if max_rows is not None and max_rows < table.num_rows:
         yield "<tfoot>"
@@ -152,7 +159,7 @@ def _render_row(row, css_class="tab-row"):
     for name, val in vals.items():
         yield "<tr>"
         yield "<th>{}</th>".format(escape(name))
-        yield "<td>{}</td>".format(escape(str(val)))
+        yield "<td>{}</td>".format(_format(val))
         yield "</tr>"
     yield "</tbody>"
     yield "</table>"
