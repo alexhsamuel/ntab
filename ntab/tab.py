@@ -15,6 +15,7 @@ __all__ = (
     "from_array",
     "from_dataframe",
     "from_recs",
+    "from_row_seqs",
 )
 
 #-------------------------------------------------------------------------------
@@ -544,6 +545,18 @@ def from_recs(recs, Table=Table):
         for n, v in rec.items():
             cols[n].append(v)
     return Table( (n, np.array(v)) for n, v in cols.items() )
+
+
+def from_row_seqs(names, rows, *, dtypes={}) -> Table:
+    """
+    Constructs a table from an iterable of 
+    """
+    # FIXME: Do better.
+    cols = [ [] for n in names ]
+    for row in rows:
+        for col, val in zip(cols, row):
+            col.append(val)
+    return Table({ n: np.array(c) for n, c in zip(names, cols) })
 
 
 #-------------------------------------------------------------------------------
