@@ -1,5 +1,7 @@
+import numpy as np
 import pytest
 
+import ntab
 from   ntab import Table
 
 #-------------------------------------------------------------------------------
@@ -91,5 +93,17 @@ def test_tab_add_col_scalar():
     tab.a.l = "foo"
     assert list(tab.a.i) == [2, 2, 2]
     assert list(tab.a.l) == ["foo", "foo", "foo"]
+
+
+def test_to_array():
+    tab = Table(x=[4, 5, 6], z=[6, 7, 8], w=[2, 3, 4], y=[3, 4, 5])
+    arr = ntab.to_array(tab)
+    assert isinstance(arr, np.recarray)
+    assert len(arr.dtype) == 4
+    assert arr.dtype.names == ("x", "z", "w", "y")
+    assert all( arr.dtype[i] == np.int64 for i in range(4) )
+    assert len(arr) == 3
+    assert arr.x[1] == 5
+    assert arr[2].w == 4
 
 
