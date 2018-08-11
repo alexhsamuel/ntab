@@ -71,11 +71,11 @@ def arrs_from_recs(recs, size_hint=1024, get_dtype=get_dtype):
       ...   dict(x=19.5, y=57.3, z=1042)]
       >>> arrs = arrs_from_recs(recs)
       >>> arrs["x"]
-      array([ 10. ,  12. ,  19.5])
+      array([10. , 12. , 19.5])
       >>> arrs["y"]
-      array([ 20. ,  42. ,  57.3])
+      array([20. , 42. , 57.3])
       >>> arrs["z"]
-      array([   30.,    nan,  1042.])
+      array([  30.,   nan, 1042.])
 
     """
     def resize(arr, size):

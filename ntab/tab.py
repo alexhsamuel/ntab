@@ -271,6 +271,7 @@ class Table(object):
 
 
     def __get_subtable(self, sel):
+        # FIXME: Store the mask in the table and filter lazily.
         return self.__class__(
             (n, a[sel]) for n, a in self.__arrs.items() )
 
@@ -434,42 +435,6 @@ class Table(object):
             if len(self.__arrs) == 0:
                 # Removed the last column.
                 self.__length = 0
-
-
-    #---------------------------------------------------------------------------
-    # Special methods
-
-    def mask(self, mask):
-        # FIXME: We could store the mask in the table, and apply it lazily.
-        mask = np.asarray(mask, dtype=bool)
-        if mask.shape != (self.__length, ):
-            raise ValueError("wrong shape")
-        return self.__get_subtable(mask)
-
-
-    def filter_mask(self, **selections):
-        mask = None
-        for name, value in selections.items():
-            array = self.__arrs[name]
-            if mask is None:
-                mask = array == value
-            else:
-                mask[mask] &= array[mask] == value
-        return mask
-
-
-    def filter(self, **selections):
-        return self.mask(self.filter_mask(**selections))
-
-
-    def find(self, **selections):
-        idx = self.filter_mask(**selections).nonzero()[0]
-        if len(idx) == 0:
-            raise LookupError("no item")
-        elif len(idx) == 1:
-            return self._get_row(idx)
-        else:
-            raise LookupError("multiple items")
 
 
     #---------------------------------------------------------------------------
