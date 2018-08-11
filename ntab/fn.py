@@ -27,7 +27,6 @@ def rename(tab, *args, **kw_args):
     """
     for new, old in dict(*args, **kw_args).items():
         tab.arrs[str(new)] = tab.arrs.pop(old)
-    
 
 
 def get_const(tab):
@@ -52,7 +51,6 @@ def get_const(tab):
             const[name] = val
 
     return const
-
 
 
 def remove_const(tab):
