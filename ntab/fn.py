@@ -1,21 +1,29 @@
-from   .tab import Table
+from   .lib import container
 
 #-------------------------------------------------------------------------------
 
+def select_arrs(tab, names):
+    """
+    Returns a table with arrays selected by container `names`.
+    """
+    names = container.select_ordered(tab.names, names)
+    return type(tab)( (n, tab.arrs[n]) for n in names )
+
+
 def rename(tab, *args, **kw_args):
     """
-    Renames cols.
+    Renames arrays.
 
       >>> tab = Table(x=[3, 4, 5], y=[4, 5, 6])
       >>> rename(tab, axe="x", why="y")
       >>> sorted(tab.arrs.keys())
       ['axe', 'why']
 
-    Arguments are converted to an ordered mapping from new to old col names,
-    and applied in order.  
+    Arguments are converted to an ordered mapping from new to old array names,
+    and applied in order.
 
-    @raise KeyError:
-      
+    :raise KeyError:
+      A given name was not found.
     """
     for new, old in dict(*args, **kw_args).items():
         tab.arrs[str(new)] = tab.arrs.pop(old)

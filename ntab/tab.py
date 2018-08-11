@@ -144,36 +144,6 @@ class ArraysProxy(collections.MutableMapping):
             raise KeyError(name)
 
 
-    # Special methods.
-
-    def select(self, names):
-        """
-        Returns a table with arrays selected by container `names`.
-        """
-        return self.__table.__class__(
-            (n, a) for n, a in self.__arrs.items() if n in names )
-
-
-    def renamed(self, names={}, **kw_args):
-        """
-        Returns a table with renamed arrays.
-        """
-        names = dict(names)
-        names.update(kw_args)
-        names = { o: n for n, o in names.items() }
-        return self.__table.__class__(
-            (names.get(n, n), a) for n, a in self.__arrs.items() )
-
-
-    def sorted_as(self, *names):
-        """
-        Returns a table with the same arrays sorted as `names`.
-        """
-        names = sort_as(list(self.__arrs.keys()), names)
-        return self.__table.__class__(
-            (n, self.__arrs[n]) for n in names )
-
-
 
 class Row(object):
 

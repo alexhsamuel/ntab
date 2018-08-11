@@ -1,6 +1,21 @@
-from   ntab import *
+from   ntab import Table, fn
+from   ntab.lib.container import ALL, all_but
 
 #-------------------------------------------------------------------------------
+
+def test_select_arrs():
+    tab = Table(x=[3,4,5], y=[4,5,6], z=[5,6,7], w=[6,7,8])
+    assert tab.names == ["x", "y", "z", "w"]
+
+    sel = fn.select_arrs(tab, ALL)
+    assert sel.names == ["x", "y", "z", "w"]
+
+    sel = fn.select_arrs(tab, all_but("y"))
+    assert sel.names == ["x", "z", "w"]
+
+    sel = fn.select_arrs(tab, ("w", "z"))
+    assert sel.names == ["w", "z"]
+
 
 def test_get_const_empty():
     tab = Table()
