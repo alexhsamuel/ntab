@@ -55,7 +55,7 @@ def _ensure_array(obj, length):
 
 #-------------------------------------------------------------------------------
 
-class ArraysObjectProxy(object):
+class ArraysObjectProxy:
     """
     Proxy for arrays by name as attributes.
     """
@@ -145,7 +145,7 @@ class ArraysProxy(collections.MutableMapping):
 
 
 
-class Row(object):
+class Row:
 
     def __init__(self, arrs, idx):
         self.__arrs = arrs
@@ -245,7 +245,7 @@ class RowsProxy(collections.Sequence):
 
 #-------------------------------------------------------------------------------
 
-class Table(object):
+class Table:
     """
     Data table consisting of named parallel `ndarray`s.
 
