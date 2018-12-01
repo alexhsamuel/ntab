@@ -1,7 +1,38 @@
+import pytest
+
 from   ntab import Table, fn
 from   ntab.lib.container import ALL, all_but
 
 #-------------------------------------------------------------------------------
+
+def test_concat():
+    tab0 = Table(x=[3,4,5], y=[4,5,6], z=[5,6,7], w=[6,7,8])
+    tab1 = Table(y=[2,1], z=[3,2], x=[0,1], w=[1,0])
+
+    res = fn.concat(tab0, tab1, tab0)
+    assert res.names == ["x", "y", "z", "w"]
+    assert res.num_rows == 8
+    assert list(res.a.x) == [3, 4, 5, 0, 1, 3, 4, 5]
+    assert list(res.a.y) == [4, 5, 6, 2, 1, 4, 5, 6]
+    assert list(res.a.z) == [5, 6, 7, 3, 2, 5, 6, 7]
+    assert list(res.a.w) == [6, 7, 8, 1, 0, 6, 7, 8]
+
+
+def test_concat_err():
+    tab0 = Table(x=[3,4,5], y=[4,5,6], z=[5,6,7], w=[6,7,8])
+    
+    tab1 = Table(y=[2,1], z=[3,2], x=[0,1], w=["foo", "bar"])
+    with pytest.raises(TypeError):
+        fn.concat(tab0, tab1)
+
+    tab2 = Table(y=[2,1], x=[0,1], w=[1,0])
+    with pytest.raises(TypeError):
+        fn.concat(tab0, tab2)
+
+    tab3 = Table(x=[3,4,5], q=[7,8,9], y=[4,5,6], z=[5,6,7], w=[6,7,8])
+    with pytest.raises(TypeError):
+        fn.concat(tab0, tab3)
+    
 
 def test_select_arrs():
     tab = Table(x=[3,4,5], y=[4,5,6], z=[5,6,7], w=[6,7,8])

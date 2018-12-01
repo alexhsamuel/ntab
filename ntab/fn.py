@@ -1,7 +1,31 @@
+import numpy as np
+
 from   .lib import container
 from   .tab import Table
 
 #-------------------------------------------------------------------------------
+
+def concat(*tabs):
+    """
+    Concatenates `tabs`.
+
+    All must have the same names and dtypes, up to order.
+    """
+    dtypes = { n: a.dtype for n, a in tabs[0].arrs.items() }
+
+    # First check dtypes.
+    for tab in tabs[1 :]:
+        tab_dtypes = { n: a.dtype for n, a in tab.arrs.items() }
+        if tab_dtypes != dtypes:
+            raise TypeError(f"dtypes do not match: {tab_dtypes}")
+
+    # Collect and concatenate arrays.
+    return Table(
+        (n, np.concatenate([ t.arrs[n] for t in tabs ]))
+        for n in dtypes
+    )
+        
+
 
 def select_arrs(tab, names):
     """
