@@ -8,7 +8,7 @@ import collections
 import numpy as np
 
 from   . import fmt
-from   .lib import sort_as, normalize_index, format_ctor, a_value
+from   .lib import normalize_index, format_ctor, a_value
 
 __all__ = (
     "Table",
