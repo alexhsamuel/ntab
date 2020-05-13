@@ -35,17 +35,17 @@ def _ensure_array(obj, length):
         # Convert sequences to arrays.
         try:
             len(obj)
-        except:
+        except TypeError:
             pass
         else:
             arr = np.array(obj)
-            
+
     # Convert scalars to full arrays.
     if arr is None:
         # FIXME: Newer numpy doesn't require explicit dtype
         dtype = np.array(obj).dtype
         arr = np.full(length, obj, dtype)
-    
+
     if len(arr.shape) != 1:
         raise ValueError("not one-dimensional")
     if length is not None and arr.shape != (length, ):
@@ -91,7 +91,6 @@ class ArraysObjectProxy:
             self.__table.remove(name)
         except ValueError:
             raise AttributeError(name)
-
 
 
 
