@@ -485,9 +485,9 @@ def from_recs(recs, Table=Table):
 
 def from_row_seqs(names, rows, *, dtypes={}) -> Table:
     """
-    Constructs a table from an iterable of 
+    Constructs a table from an iterable of sequences.
     """
-    # FIXME: Do better.
+    # FIXME: Do better with type conversions.
     cols = [ [] for n in names ]
     for row in rows:
         for col, val in zip(cols, row):
