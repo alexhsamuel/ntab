@@ -4,7 +4,7 @@ Pandas-lite tables, in a more numpy-oriented manner.
 
 #-------------------------------------------------------------------------------
 
-import collections
+import collections.abc
 import numpy as np
 
 from   . import fmt
@@ -95,7 +95,7 @@ class ArraysObjectProxy:
 
 
 
-class ArraysProxy(collections.MutableMapping):
+class ArraysProxy(collections.abc.MutableMapping):
     """
     Mapping proxy for arrays by name.
     """
@@ -210,7 +210,7 @@ class Row:
 
 
 
-class RowsProxy(collections.Sequence):
+class RowsProxy(collections.abc.Sequence):
     # FIXME: Allow modifying values in rows (i.e. mutable rows)?
     # FIXME: Allow inserting / removing rows (i.e. mutable sequence)?
 

@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 import logging as log  # FIXME
 import numpy as np
 
@@ -288,7 +288,7 @@ def arguniquen(arrays, orders=None):
 
 #-------------------------------------------------------------------------------
 
-class MultiGroupBy(collections.Mapping):
+class MultiGroupBy(collections.abc.Mapping):
 
     def __init__(self, *arrays):
         self.__arrays       = tuple(arrays)

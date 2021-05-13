@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 import numpy as np
 
 from   .lib import tupleize
@@ -42,7 +42,7 @@ class Aggregation(object):
 
 
 
-class GroupBy(collections.Mapping):
+class GroupBy(collections.abc.Mapping):
 
     def __init__(self, table, name):
         self.__table    = table
@@ -124,7 +124,7 @@ class GroupBy(collections.Mapping):
 
 #-------------------------------------------------------------------------------
 
-class MultiGroupBy(collections.Mapping):
+class MultiGroupBy(collections.abc.Mapping):
 
     def __init__(self, tables, names):
         tables = tupleize(tables)
