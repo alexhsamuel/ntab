@@ -8,6 +8,7 @@ import collections
 import numpy as np
 
 from   . import fmt
+from   .lib import memo
 from   .lib import normalize_index, format_ctor, a_value
 
 __all__ = (
@@ -278,11 +279,21 @@ class Table:
     def __construct(self, length, arrs):
         self.__length = length
         self.__arrs = arrs
-        # Proxies.
-        # FIXME: Create lazily?
-        self.a          = ArraysObjectProxy(self)
-        self.arrs       = ArraysProxy(self)
-        self.rows       = RowsProxy(self)
+
+
+    @memo.lazy_property
+    def a(self):
+        return ArraysObjectProxy(self)
+
+
+    @memo.lazy_property
+    def arrs(self):
+        return ArraysProxy(self)
+
+
+    @memo.lazy_property
+    def rows(self):
+        return RowsProxy(self)
 
 
     def __check(self, arrs):
