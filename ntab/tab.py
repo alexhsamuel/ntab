@@ -180,13 +180,8 @@ class Row:
 
 
     def __repr__(self):
-        return (
-            "Row({}, ".format(self.__idx)
-            + ", ".join( 
-                "{}={!r}".format(n, a[self.__idx])
-                for n, a in self.__arrs.items())
-            + ")"
-        )
+        items = ", ".join( f"{n}={a[self.__idx]!r}" for n, a in self.__arrs.items() )
+        return f"Row({self._idx}, {items})"
 
     
     def __str__(self):
@@ -299,13 +294,13 @@ class Table:
     def __check(self, arrs):
         for name, arr in arrs.items():
             if not isinstance(name, str):
-                raise TypeError("not a string name: {}".format(name))
+                raise TypeError(f"not a string name: {name}")
             if not isinstance(arr, np.ndarray):
-                raise TypeError("not an ndarray: {}".format(name))
+                raise TypeError(f"not an ndarray: {name}")
             if len(arr.shape) != 1:
-                raise ValueError("not 1-dimensional array: {}".format(name))
+                raise ValueError(f"not 1-dimensional array: {name}")
             if self.__length is not None and arr.shape != (self.__length, ):
-                raise ValueError("wrong length: {}".format(name))
+                raise ValueError(f"wrong length: {name}")
 
 
     #---------------------------------------------------------------------------
