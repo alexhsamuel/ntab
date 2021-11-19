@@ -1,3 +1,5 @@
+- tabella
 - sereal
 - sereze
 - serese
+- xeres
