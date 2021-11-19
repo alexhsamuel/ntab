@@ -344,7 +344,7 @@ class Table:
 
 
     @classmethod
-    def wrap(class_, arrs, check=True):
+    def wrap(cls, arrs, check=True):
         """
         Constructs a table by wrapping a mapping from names to parallel array.
 
@@ -358,7 +358,7 @@ class Table:
           occur later.
         """
         # Construct an instance without calling __init__().
-        self = object.__new__(class_)
+        self = object.__new__(cls)
 
         self.__construct(arrs)
         if check:
