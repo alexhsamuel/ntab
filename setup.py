@@ -1,4 +1,5 @@
 import setuptools
+from   Cython.Build import cythonize
 
 #-------------------------------------------------------------------------------
 
@@ -17,7 +18,7 @@ setuptools.setup(
     version         ="0.3.2",
     description     ="Simple numerical tables",
     long_description=long_description,
-    url             ="https://github.com/alexhsamuel/ntab",
+    url             ="https://codeberg.org/alexhsamuel/ntab",
     author          ="Alex Samuel",
     author_email    ="alex@alexsamuel.net",
     license         ="MIT",
@@ -35,6 +36,7 @@ setuptools.setup(
     ],
 
     packages        =setuptools.find_packages(exclude=[]),
+    ext_modules     =cythonize("tabella/analyze.pyx"),
     package_data    ={"": ["test/*"]},
     data_files      =[],
     entry_points    ={},
