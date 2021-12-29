@@ -31,12 +31,17 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
     ],
 
+    extras_require={
+        "dev": ["cython", "pytest"],
+        "build": ["cython", ],
+    },
+
     install_requires=[
         "numpy",
     ],
 
     packages        =setuptools.find_packages(exclude=[]),
-    ext_modules     =cythonize("tabella/analyze.pyx"),
+    ext_modules     =cythonize("tabela/analyze.pyx"),
     package_data    ={"": ["test/*"]},
     data_files      =[],
     entry_points    ={},

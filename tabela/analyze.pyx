@@ -1,6 +1,8 @@
 import cython
 
-from libc.math cimport isinf, isnan, pow10, round
+from libc.math cimport isinf, isnan, round
+cdef extern from "<math.h>" nogil:
+    double pow10(double)
 
 
 ctypedef fused number:
@@ -35,11 +37,11 @@ cpdef analyze(number[:] arr, max_precision=14):
     cdef number max = arr[0]
     cdef number abs_min = abs(arr[0])
     cdef cython.int precision = 0
-    cdef number precision_scale = 1
+    cdef cython.double precision_scale = 1
 
     cdef number x
     cdef number a
-    cdef number scaled
+    cdef cython.double scaled
     for i in range(n):
         x = arr[i]
         a = abs(x)
