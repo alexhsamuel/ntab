@@ -2,8 +2,8 @@ import numpy as np
 from   numpy.testing import assert_array_equal as arr_eq
 import pytest
 
-from   tabella.table import Table, collect, col_fn
-from   tabella.lib.container import all_but
+from   tabela.table import Table, collect, col_fn
+from   tabela.lib.container import all_but
 
 #-------------------------------------------------------------------------------
 

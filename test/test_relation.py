@@ -1,8 +1,8 @@
 import numpy as np
 
-from   tabella.relation import index
-from   tabella.series import Series
-from   tabella.table import Table, Row
+from   tabela.relation import index
+from   tabela.series import Series
+from   tabela.table import Table, Row
 
 #-------------------------------------------------------------------------------
 

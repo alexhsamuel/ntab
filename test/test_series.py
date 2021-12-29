@@ -1,7 +1,7 @@
 import numpy as np
 
-from   tabella.index import Index
-from   tabella.series import Series
+from   tabela.index import Index
+from   tabela.series import Series
 
 #-------------------------------------------------------------------------------
 

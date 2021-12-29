@@ -1,4 +1,4 @@
-from   tabella.lib import memo
+from   tabela.lib import memo
 
 #-------------------------------------------------------------------------------
 
