@@ -1,4 +1,3 @@
 include README.md
 include LICENSE
-recursive-include conda-recipe *
 prune *~
