@@ -120,7 +120,7 @@ class Index:
         """
         Returns an idx array that sorts the index columns.
         """
-        # FIXME: Performance: need multisort.
+        # FIXME: Use np.lexsort()!
         cols = tuple(self.__cols.values())[:: -1]
         sorter = cols[0].sorter
         for col in cols[1 :]:
